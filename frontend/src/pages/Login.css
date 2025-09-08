@@ -1,0 +1,11 @@
+.login-bg {
+  background-color: #f7f9fc;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+}
