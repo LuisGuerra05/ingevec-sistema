@@ -29,6 +29,7 @@
 /backend/.env.development.local
 /backend/.env.test.local
 /backend/.env.production.local
+/backend/scripts/seedUsers.js
 
 # General
 .DS_Store
