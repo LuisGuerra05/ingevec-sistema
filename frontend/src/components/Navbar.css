@@ -1,0 +1,26 @@
+.navbar {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  transition: top 0.4s ease-in-out;
+}
+
+.navbar-hide {
+  top: -100px;
+}
+
+.navbar-show {
+  top: 0;
+}
+
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+  padding: 80px 20px 20px 20px; /* 80px para dejar espacio al navbar fijo */
+}
