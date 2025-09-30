@@ -5,10 +5,11 @@ import Home from './pages/Home';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import Layout from "./components/Layout";
 import IngresarDatos from './pages/IngresarDatos';
+import BuscarEmpresa from './pages/BuscarEmpresa';
+import EmpresaDetalle from './pages/EmpresaDetalle';
 import './App.css';
 
 // Puedes crear estos componentes vacíos por ahora
-const BuscarEmpresa = () => <div>Buscar Empresa</div>;
 const Clasificacion = () => <div>Clasificación</div>;
 
 function App() {
@@ -56,6 +57,17 @@ function App() {
         }
       />
       <Route path="*" element={<Navigate to="/login" />} />
+
+      <Route
+        path="/empresa/:nombre"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EmpresaDetalle />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

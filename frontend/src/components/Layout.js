@@ -1,5 +1,6 @@
 import React from "react";
 import AppNavbar from "./Navbar";
+import Footer from "./Footer";
 import "./Navbar.css";
 import "./Layout.css";
 
@@ -11,6 +12,7 @@ function Layout({ children }) {
         <div className="page-container">
           <div className="page-content">{children}</div>
         </div>
+        <Footer />
       </div>
     </>
   );

@@ -1,0 +1,17 @@
+.footer-bar {
+  width: 100%;
+  background: var(--azul2, #0f284b);
+  color: #fff;
+  text-align: center;
+  padding: 25px 0 25px 0;
+  font-size: 1rem;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}

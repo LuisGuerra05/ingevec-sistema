@@ -97,3 +97,15 @@ button,
 .form-range::-ms-thumb {
   border-radius: 50% !important;
 }
+
+.page-card {
+  width: 100%;
+  max-width: 650px;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10);
+  border: none;
+  background: var(--blanco);
+  margin: 10px auto 0 auto; /* centra horizontalmente */
+  padding: 2rem;
+}
+

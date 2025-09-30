@@ -13,7 +13,8 @@ function IngresarDatos() {
   const [incumplimiento, setIncumplimiento] = useState(false);
   const [razon, setRazon] = useState("");
   const [gravedad, setGravedad] = useState(1);
-  const [retenciones, setRetenciones] = useState(""); // <-- nuevo estado
+  const [retenciones, setRetenciones] = useState("");
+  const [comentario, setComentario] = useState(""); // <-- nuevo estado
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
 
@@ -21,6 +22,7 @@ function IngresarDatos() {
     e.preventDefault();
     setError("");
     setOk("");
+
     if (!empresa || !fecha) {
       setError("Todos los campos son obligatorios");
       return;
@@ -29,6 +31,7 @@ function IngresarDatos() {
       setError("Debe ingresar razón y gravedad");
       return;
     }
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch("/api/incumplimientos", {
@@ -43,18 +46,20 @@ function IngresarDatos() {
           incumplimiento,
           razon,
           gravedad,
-          retenciones: retenciones !== "" ? Number(retenciones) : undefined // <-- enviar solo si hay dato
+          retenciones: incumplimiento && retenciones !== "" ? Number(retenciones) : undefined,
+          comentario: !incumplimiento ? comentario : undefined // <-- guardar solo si no hubo incumplimiento
         })
       });
       const data = await res.json();
       if (data.ok) {
-        setOk("Incumplimiento guardado correctamente");
+        setOk("Registro guardado correctamente");
         setEmpresa("");
         setFecha("");
         setIncumplimiento(false);
         setRazon("");
         setGravedad(1);
         setRetenciones("");
+        setComentario("");
       } else {
         setError(data.error || "Error al guardar");
       }
@@ -64,54 +69,58 @@ function IngresarDatos() {
   };
 
   return (
-    <div className="ingresar-bg">
-      <Card className="ingresar-card p-4">
-        <h2 className="mb-4 text-center">Ingresar Incumplimiento</h2>
+    <div className="page-bg">
+      <Card className="page-card">
+        <h2 className="mb-2 text-center">Trazabilidad de Subcontratista</h2>
+        <p className="text-center text-muted mb-4">
+          Registre cumplimiento o incumplimiento del subcontratista.
+        </p>
         <Form onSubmit={handleSubmit}>
-          <div>
-            <Form.Group className="mb-3">
-              <Form.Label>Nombre de la Empresa</Form.Label>
-              <CustomSelect
-                options={opcionesEmpresas}
-                value={opcionesEmpresas.find(o => o.value === empresa) || null}
-                onChange={o => setEmpresa(o.value)}
-                placeholder="Seleccione una empresa..."
+          <Form.Group className="mb-3">
+            <Form.Label>Nombre de la Empresa</Form.Label>
+            <CustomSelect
+              options={opcionesEmpresas}
+              value={opcionesEmpresas.find(o => o.value === empresa) || null}
+              onChange={o => setEmpresa(o.value)}
+              placeholder="Seleccione una empresa..."
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Fecha</Form.Label>
+            <Form.Control
+              type="date"
+              value={fecha}
+              onChange={e => setFecha(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>¿Hubo Incumplimiento?</Form.Label>
+            <div>
+              <Form.Check
+                inline
+                label="Sí"
+                type="radio"
+                name="incumplimiento"
+                id="incumplimiento-si"
+                checked={incumplimiento === true}
+                onChange={() => setIncumplimiento(true)}
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Fecha</Form.Label>
-              <Form.Control
-                type="date"
-                value={fecha}
-                onChange={e => setFecha(e.target.value)}
-                required
+              <Form.Check
+                inline
+                label="No"
+                type="radio"
+                name="incumplimiento"
+                id="incumplimiento-no"
+                checked={incumplimiento === false}
+                onChange={() => setIncumplimiento(false)}
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>¿Hubo Incumplimiento?</Form.Label>
-              <div>
-                <Form.Check
-                  inline
-                  label="Sí"
-                  type="radio"
-                  name="incumplimiento"
-                  id="incumplimiento-si"
-                  checked={incumplimiento === true}
-                  onChange={() => setIncumplimiento(true)}
-                />
-                <Form.Check
-                  inline
-                  label="No"
-                  type="radio"
-                  name="incumplimiento"
-                  id="incumplimiento-no"
-                  checked={incumplimiento === false}
-                  onChange={() => setIncumplimiento(false)}
-                />
-              </div>
-            </Form.Group>
-          </div>
-          {incumplimiento && (
+            </div>
+          </Form.Group>
+
+          {incumplimiento ? (
             <div className="ingresar-form-row">
               <div className="ingresar-form-col">
                 <Form.Group className="mb-3">
@@ -151,9 +160,22 @@ function IngresarDatos() {
                 </Form.Group>
               </div>
             </div>
+          ) : (
+            <Form.Group className="mb-3">
+              <Form.Label>Comentario</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                value={comentario}
+                onChange={e => setComentario(e.target.value)}
+                placeholder="Escriba un comentario sobre el cumplimiento (opcional)"
+              />
+            </Form.Group>
           )}
+
           {error && <Alert variant="danger">{error}</Alert>}
           {ok && <Alert variant="success">{ok}</Alert>}
+
           <Button type="submit" variant="primary" className="w-100 mt-2" size="lg">
             Guardar
           </Button>

@@ -1,0 +1,25 @@
+.buscar-bg {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+}
+
+.buscar-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10);
+  max-width: 600px;
+  width: 100%;
+  padding: 32px 24px;
+  margin: 0 auto;
+}
+
+.resultado-empresa {
+  background: #e6f2fa;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  color: var(--azul2, #0f284b);
+}

@@ -42,7 +42,7 @@ function AppNavbar() {
         <Navbar.Collapse id="main-navbar">
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/buscar-empresa" active={location.pathname === "/buscar-empresa"}>
-              Buscar Empresa
+              Buscar Subcontratista
             </Nav.Link>
             <Nav.Link as={Link} to="/clasificacion" active={location.pathname === "/clasificacion"}>
               Clasificación
