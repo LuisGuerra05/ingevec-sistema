@@ -1,13 +1,18 @@
 import React from "react";
 import AppNavbar from "./Navbar";
 import "./Navbar.css";
+import "./Layout.css";
 
 function Layout({ children }) {
   return (
-    <div className="page-container">
+    <>
       <AppNavbar />
-      <div className="page-content">{children}</div>
-    </div>
+      <div className="layout-bg">
+        <div className="page-container">
+          <div className="page-content">{children}</div>
+        </div>
+      </div>
+    </>
   );
 }
 

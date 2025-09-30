@@ -1,40 +1,16 @@
-body, #root {
-  margin: 0 !important;
-  padding: 0 !important;
-  min-height: 100vh;
-  width: 100vw;
-  box-sizing: border-box;
-}
-
-.ingresar-bg {
-  min-height: 100vh;
-  min-width: 100vw;
-  width: 100vw;
-  height: 100vh;
-  background-image:
-    url("https://www.transparenttextures.com/patterns/cubes.png"),
-    linear-gradient(120deg, var(--azul2) 0%, #e0e7ff 100%);
-  background-repeat: repeat;
-  background-blend-mode: multiply;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 0;
-}
-
 .ingresar-card {
   width: 100%;
   max-width: 650px;
+  min-height: 400px; /* 👈 altura mínima para que no se achique */
   border-radius: 18px;
   box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10);
   border: none;
   background: var(--blanco);
+  margin-top: 80px;
+  padding: 2rem;
+  transition: min-height 0.3s ease; /* suave cuando cambia */
 }
+
 
 /* Estados de inputs */
 .form-control:focus, .form-select:focus {
@@ -68,13 +44,9 @@ body, #root {
     gap: 24px;
   }
 
-  /* Por defecto, las columnas ocupan todo */
   .ingresar-form-col {
-    flex: 1 1 100%;
-  }
-
-  /* Si hay más de una columna dentro de la fila, se reparten */
-  .ingresar-form-row > .ingresar-form-col {
     flex: 1;
   }
 }
+
+
