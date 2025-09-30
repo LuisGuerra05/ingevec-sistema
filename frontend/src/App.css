@@ -1,3 +1,10 @@
+:root {
+  --azul1: #0070b7;
+  --azul2: #0f284b;
+  --azul2-hover: #07162a;
+  --blanco: #fff;
+}
+
 .App {
   text-align: center;
 }
@@ -35,4 +42,58 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Botón primario estilizado */
+.btn-primary,
+.btn-primary:active,
+.btn-primary:focus {
+  background-color: var(--azul2) !important;
+  border-color: var(--azul2) !important;
+  color: var(--blanco) !important;
+  box-shadow: 0 2px 8px 0 rgba(15,40,75,0.10);
+  transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--azul2-hover) !important;
+  border-color: var(--azul2-hover) !important;
+  color: var(--blanco) !important;
+  box-shadow: 0 4px 16px 0 rgba(7,22,42,0.15);
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+  color: var(--azul2);
+}
+
+a, .nav-link {
+  color: var(--azul2);
+}
+a:hover, .nav-link:hover {
+  color: var(--azul1);
+}
+
+/* Bordes curvos globales para todos los formularios y campos */
+input,
+select,
+textarea,
+button,
+.form-control,
+.form-select,
+.form-range,
+.form-check-input,
+.card,
+.css-13cymwt-control, /* react-select input */
+.css-1nmdiq5-menu {   /* react-select dropdown */
+  border-radius: 12px !important;
+}
+
+/* Opcional: radios y sliders más redondos */
+.form-check-input[type="radio"] {
+  border-radius: 50% !important;
+}
+.form-range::-webkit-slider-thumb,
+.form-range::-moz-range-thumb,
+.form-range::-ms-thumb {
+  border-radius: 50% !important;
 }

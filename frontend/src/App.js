@@ -4,11 +4,12 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import Layout from "./components/Layout";
+import IngresarDatos from './pages/IngresarDatos';
+import './App.css';
 
 // Puedes crear estos componentes vacíos por ahora
 const BuscarEmpresa = () => <div>Buscar Empresa</div>;
 const Clasificacion = () => <div>Clasificación</div>;
-const IngresarDatos = () => <div>Ingresar Datos</div>;
 
 function App() {
   return (
