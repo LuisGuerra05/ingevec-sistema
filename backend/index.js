@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const UserRoutes = require('./routes/UserRoutes');
+const IncumplimientoRoutes = require('./routes/IncumplimientoRoutes');
+
 
 const { MONGO_URI, DB_NAME, PORT } = process.env;
 
@@ -12,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', UserRoutes);
+app.use('/api/incumplimientos', IncumplimientoRoutes);
 
 mongoose.connect(MONGO_URI, { dbName: DB_NAME })
   .then(() => {
