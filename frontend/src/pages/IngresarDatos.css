@@ -13,7 +13,7 @@ body, #root {
   height: 100vh;
   background-image:
     url("https://www.transparenttextures.com/patterns/cubes.png"),
-    linear-gradient(120deg, #e0e7f1 0%, #e0e7ff 100%);
+    linear-gradient(120deg, var(--azul2) 0%, #e0e7ff 100%);
   background-repeat: repeat;
   background-blend-mode: multiply;
   display: flex;
@@ -36,8 +36,7 @@ body, #root {
   background: var(--blanco);
 }
 
-
-
+/* Estados de inputs */
 .form-control:focus, .form-select:focus {
   border-color: var(--azul1);
   box-shadow: 0 0 0 0.2rem rgba(0,112,183,0.15);
@@ -48,6 +47,7 @@ body, #root {
   border-color: var(--azul1);
 }
 
+/* Slider de gravedad */
 .form-range::-webkit-slider-thumb {
   background: var(--azul1);
 }
@@ -61,29 +61,20 @@ body, #root {
   box-shadow: 0 0 0 0.2rem rgba(0,112,183,0.25);
 }
 
+/* Responsive: columnas dinámicas */
 @media (min-width: 768px) {
   .ingresar-form-row {
     display: flex;
     gap: 24px;
   }
+
+  /* Por defecto, las columnas ocupan todo */
   .ingresar-form-col {
+    flex: 1 1 100%;
+  }
+
+  /* Si hay más de una columna dentro de la fila, se reparten */
+  .ingresar-form-row > .ingresar-form-col {
     flex: 1;
   }
-}
-
-
-
-/* IngresarDatos.css */
-.custom-calendar .react-datepicker__day--selected,
-.custom-calendar .react-datepicker__day--keyboard-selected {
-  background-color: #0070b7 !important;
-  color: #fff !important;
-}
-.custom-calendar .react-datepicker__header {
-  background-color: #e6f2fa;
-  border-bottom: 2px solid #0070b7;
-}
-.custom-calendar .react-datepicker__current-month,
-.custom-calendar .react-datepicker__day-name {
-  color: #0070b7;
 }

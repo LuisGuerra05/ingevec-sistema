@@ -1,0 +1,86 @@
+/* 🔹 Contenedor general del calendario */
+.react-datepicker {
+  font-family: inherit;
+  border: none;
+  box-shadow: 0 6px 32px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 🔹 Encabezado del calendario */
+.react-datepicker__header {
+  background-color: #e6f2fa;
+  border-bottom: 2px solid #0070b7;
+  padding-top: 10px;
+}
+
+/* 🔹 Texto de mes y año */
+.react-datepicker__current-month {
+  font-weight: 600;
+  color: #0070b7;
+}
+
+/* 🔹 Días de la semana */
+.react-datepicker__day-name {
+  color: #0070b7;
+  font-weight: 500;
+}
+
+/* 🔹 Día seleccionado */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #0070b7 !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+
+/* 🔹 Hover sobre los días */
+.react-datepicker__day:hover {
+  background-color: #e6f2fa;
+  border-radius: 50%;
+}
+
+/* 🔹 Selectores de mes y año */
+.react-datepicker__month-dropdown-container select,
+.react-datepicker__year-dropdown-container select {
+  appearance: none;            /* quitar estilos nativos */
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+/* 🔹 Opciones del select */
+.react-datepicker__month-dropdown-container select option,
+.react-datepicker__year-dropdown-container select option {
+  padding: 8px;
+}
+
+/* 🔹 Hover sobre los selects */
+.react-datepicker__month-dropdown-container select:hover,
+.react-datepicker__year-dropdown-container select:hover {
+  border-color: #0070b7;
+  background-color: #f5f9ff;
+}
+
+/* 🔹 Contenedor del input */
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+/* 🔹 Estilos del input */
+input.form-control {
+  width: 100%;
+  border-radius: 12px !important;
+}
+
+/* 🔹 Grupo de inputs */
+.input-group {
+  width: 100%;
+}
+
