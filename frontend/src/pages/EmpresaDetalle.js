@@ -39,15 +39,30 @@ function EmpresaDetalle() {
       <div className="page-card">
         {empresa ? (
           <>
-            <h2 className="mb-2 text-center">{empresa.nombre}</h2>
+            {/* Semáforo + nombre + riesgo */}
             <div className="semaforo-container">
               <div className="semaforo-vertical">
-                <div className={`semaforo-circulo ${empresa.semaforo === "rojo" ? "activo" : ""}`} style={{ background: SEMAFORO_COLORS.rojo }} />
-                <div className={`semaforo-circulo ${empresa.semaforo === "amarillo" ? "activo" : ""}`} style={{ background: SEMAFORO_COLORS.amarillo }} />
-                <div className={`semaforo-circulo ${empresa.semaforo === "verde" ? "activo" : ""}`} style={{ background: SEMAFORO_COLORS.verde }} />
+                <div
+                  className={`semaforo-circulo ${empresa.semaforo === "rojo" ? "activo" : ""}`}
+                  style={{ background: SEMAFORO_COLORS.rojo }}
+                />
+                <div
+                  className={`semaforo-circulo ${empresa.semaforo === "amarillo" ? "activo" : ""}`}
+                  style={{ background: SEMAFORO_COLORS.amarillo }}
+                />
+                <div
+                  className={`semaforo-circulo ${empresa.semaforo === "verde" ? "activo" : ""}`}
+                  style={{ background: SEMAFORO_COLORS.verde }}
+                />
               </div>
-              <div className="semaforo-text" style={getSemaforoText(empresa.semaforo).style}>
-                {getSemaforoText(empresa.semaforo).text}
+              <div className="semaforo-info">
+                <h2 className="empresa-nombre">{empresa.nombre}</h2>
+                <div
+                  className="semaforo-text"
+                  style={getSemaforoText(empresa.semaforo).style}
+                >
+                  {getSemaforoText(empresa.semaforo).text}
+                </div>
               </div>
             </div>
 
@@ -66,7 +81,9 @@ function EmpresaDetalle() {
                 <tbody>
                   {incumplimientos.length === 0 ? (
                     <tr>
-                      <td colSpan={4} style={{ textAlign: "center", color: "#888" }}>Sin registros</td>
+                      <td colSpan={4} style={{ textAlign: "center", color: "#888" }}>
+                        Sin registros
+                      </td>
                     </tr>
                   ) : (
                     incumplimientos.map((inc, idx) => (
@@ -74,7 +91,9 @@ function EmpresaDetalle() {
                         <td>{new Date(inc.fecha).toLocaleDateString()}</td>
                         <td>{inc.razon || "-"}</td>
                         <td className="num-col">{inc.gravedad || "-"}</td>
-                        <td className="num-col">{inc.retenciones !== undefined ? inc.retenciones.toLocaleString() : "-"}</td>
+                        <td className="num-col">
+                          {inc.retenciones !== undefined ? inc.retenciones.toLocaleString() : "-"}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -95,13 +114,19 @@ function EmpresaDetalle() {
                 <tbody>
                   {cumplimientos.length === 0 ? (
                     <tr>
-                      <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>Sin registros</td>
+                      <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
+                        Sin registros
+                      </td>
                     </tr>
                   ) : (
                     cumplimientos.map((inc, idx) => (
                       <tr key={idx}>
                         <td>{new Date(inc.fecha).toLocaleDateString()}</td>
-                        <td>{inc.comentario && inc.comentario.trim() !== "" ? inc.comentario : "Sin comentario"}</td>
+                        <td>
+                          {inc.comentario && inc.comentario.trim() !== ""
+                            ? inc.comentario
+                            : "Sin comentario"}
+                        </td>
                       </tr>
                     ))
                   )}
