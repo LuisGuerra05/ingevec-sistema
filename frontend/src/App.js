@@ -7,10 +7,9 @@ import Layout from "./components/Layout";
 import IngresarDatos from './pages/IngresarDatos';
 import BuscarEmpresa from './pages/BuscarEmpresa';
 import EmpresaDetalle from './pages/EmpresaDetalle';
+import Clasificacion from './pages/Clasificacion';
 import './App.css';
 
-// Puedes crear estos componentes vacíos por ahora
-const Clasificacion = () => <div>Clasificación</div>;
 
 function App() {
   return (

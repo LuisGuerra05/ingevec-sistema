@@ -1,0 +1,32 @@
+.lista-empresas {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.empresa-link {
+  font-size: 1rem;
+  color: var(--azul2, #0f284b);
+  text-decoration: none;
+  padding: 6px 0;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.empresa-link:hover {
+  color: var(--azul2);
+  text-decoration: underline;
+}
+
+/* Cambiar fondo cuando el acordeón está abierto */
+.accordion-button:not(.collapsed) {
+  background-color: #f8fafc !important;  /* pon blanco o el color que quieras */
+  color: inherit !important;             /* conserva el color del texto */
+  box-shadow: none !important;           /* elimina borde azul de foco */
+}
+
+/* También quitar el borde azul del focus */
+.accordion-button:focus {
+  box-shadow: none !important;
+  border-color: transparent !important;
+}

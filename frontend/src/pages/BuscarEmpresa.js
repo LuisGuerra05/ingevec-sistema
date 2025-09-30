@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CustomSelect from "../components/CustomSelect";
 import "./BuscarEmpresa.css";
 import { useNavigate } from "react-router-dom";
+import { Form, Button, Card, Alert } from "react-bootstrap";
 
 function BuscarEmpresa() {
   const [empresas, setEmpresas] = useState([]);
@@ -65,13 +66,14 @@ function BuscarEmpresa() {
               {empresaInfo.semaforo === "amarillo" && "Riesgo medio"}
               {empresaInfo.semaforo === "verde" && "Bajo riesgo"}
             </div>
-            <button
-              className="btn btn-outline-primary"
+            <Button
+              variant="primary"
               style={{ borderRadius: 12, marginTop: 8 }}
               onClick={() => navigate(`/empresa/${encodeURIComponent(empresaInfo.nombre)}`)}
             >
               Ver detalle de la empresa
-            </button>
+            </Button>
+
           </div>
         )}
       </div>
