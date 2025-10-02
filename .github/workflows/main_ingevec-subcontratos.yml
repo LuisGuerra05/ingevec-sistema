@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - ingevec-subcontratos
+name: Deploy Backend to Azure Web App - ingevec-subcontratos
 
 on:
   push:
@@ -7,71 +7,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      # 1. Instalar y compilar frontend
-      - name: Install and build frontend
-        working-directory: ./frontend
-        run: |
-          npm install
-          npm run build
-
-      # 2. Instalar dependencias del backend
       - name: Install backend dependencies
         working-directory: ./backend
         run: |
           npm install
-
-      # 3. Subir backend + frontend/build como artefacto
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: |
-            backend/**
-            frontend/build/**
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-          path: .
-
-      - name: Move backend files to root
-        run: |
-          shopt -s dotglob
-          mv backend/* .
-          rm -rf backend
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E10F85F8B7B1424AB8A5A7CFF463F139 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_241A44E5D48A4D24B4F05CE10C455888 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_649162D8E8AE4A78A35FEAC3571D9B05 }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ingevec-subcontratos'
           slot-name: 'Production'
-          package: .
+          package: ./backend
