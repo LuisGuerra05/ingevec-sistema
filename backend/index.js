@@ -9,7 +9,7 @@ const UserRoutes = require('./routes/UserRoutes');
 const IncumplimientoRoutes = require('./routes/IncumplimientoRoutes');
 const EmpresaRoutes = require('./routes/EmpresaRoutes');
 
-const { MONGO_URI, DB_NAME, PORT } = process.env;
+const { MONGO_URI, DB_NAME } = process.env;
 
 const app = express();
 app.use(cors());
@@ -34,16 +34,19 @@ app.get(/^(?!\/api).*/, (req, res) => {
 mongoose.connect(MONGO_URI, { dbName: DB_NAME })
   .then(() => {
     const dbName = mongoose.connection.name;
-    console.log(`Conectado a MongoDB: ${dbName}`);
+    console.log(`✅ Conectado a MongoDB: ${dbName}`);
     if (dbName === 'test') {
       console.error("⚠️ La conexión apunta a 'test'. Define la BD en MONGO_URI (…/mi_bd) o en DB_NAME.");
       process.exit(1);
     }
-    app.listen(PORT || 3000, () => {
-      console.log(`Servidor escuchando en puerto ${PORT || 3000}`);
+
+    // Azure provee process.env.PORT automáticamente
+    const port = process.env.PORT || 4000;
+    app.listen(port, () => {
+      console.log(`🚀 Servidor escuchando en puerto ${port}`);
     });
   })
   .catch(err => {
-    console.error('Error de conexión a MongoDB:', err.message);
+    console.error('❌ Error de conexión a MongoDB:', err.message);
     process.exit(1);
   });
