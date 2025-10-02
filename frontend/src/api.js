@@ -1,20 +1,14 @@
-export function getAuthHeaders() {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+// frontend/src/api.js
+import axios from "./api/axiosInstance";
+
+// Helpers opcionales para mantener código limpio en componentes
 
 export async function login(email, password) {
-  const res = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  return res.json();
+  const { data } = await axios.post("/login", { email, password });
+  return data; // { ok, token, user } según tu backend
 }
 
 export async function getMe() {
-  const res = await fetch('/api/me', {
-    headers: { ...getAuthHeaders() }
-  });
-  return res.json();
+  const { data } = await axios.get("/me");
+  return data; // { ok, user } o lo que tu backend retorne
 }

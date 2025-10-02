@@ -1,7 +1,9 @@
+// frontend/src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, Card, Alert } from "react-bootstrap";
 import "./Login.css";
+import { login as loginApi } from "../api";
 
 function Login() {
   const navigate = useNavigate();
@@ -24,12 +26,7 @@ function Login() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
+      const data = await loginApi(email, password);
       setLoading(false);
 
       if (data.ok && data.token) {
@@ -39,9 +36,9 @@ function Login() {
       } else {
         setError(data.error || "Email o contraseña incorrectos");
       }
-    } catch {
+    } catch (err) {
       setLoading(false);
-      setError("Error de conexión con el servidor");
+      setError(err?.response?.data?.error || "Error de conexión con el servidor");
     }
   };
 
@@ -60,7 +57,7 @@ function Login() {
         <Card className="shadow p-4 login-card">
           <div className="text-center mb-4">
             <img src="/logo_ingevec.svg" alt="Ingevec Logo" style={{ width: 170 }} />
-            <h4 className="mt-3">Bienvenido a Ingevec</h4>
+            <h4 className="mt-3">Bienvenido al Radar de Riesgo de Subcontratos</h4>
             <p className="text-muted mb-0">Inicia sesión para continuar</p>
           </div>
 

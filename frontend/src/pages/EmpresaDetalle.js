@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./EmpresaDetalle.css";
+import axios from "../api/axiosInstance";
 
 const SEMAFORO_COLORS = {
   rojo: "#e53935",
   amarillo: "#fbc02d",
-  verde: "#43a047"
+  verde: "#43a047",
 };
 
 function EmpresaDetalle() {
@@ -15,16 +16,35 @@ function EmpresaDetalle() {
   const [cumplimientos, setCumplimientos] = useState([]);
 
   useEffect(() => {
-    fetch(`/api/empresas/${encodeURIComponent(nombre)}`)
-      .then(res => res.json())
-      .then(data => setEmpresa(data));
+    let mounted = true;
 
-    fetch(`/api/incumplimientos?empresa=${encodeURIComponent(nombre)}`)
-      .then(res => res.json())
-      .then(data => {
-        setIncumplimientos(data.filter(inc => inc.incumplimiento === true));
-        setCumplimientos(data.filter(inc => inc.incumplimiento === false));
+    axios
+      .get(`/empresas/${encodeURIComponent(nombre)}`)
+      .then(({ data }) => {
+        if (!mounted) return;
+        setEmpresa(data);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setEmpresa(null);
       });
+
+    axios
+      .get(`/incumplimientos`, { params: { empresa: nombre } })
+      .then(({ data }) => {
+        if (!mounted) return;
+        setIncumplimientos(data.filter((inc) => inc.incumplimiento === true));
+        setCumplimientos(data.filter((inc) => inc.incumplimiento === false));
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setIncumplimientos([]);
+        setCumplimientos([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [nombre]);
 
   const getSemaforoText = (color) => {
@@ -57,10 +77,7 @@ function EmpresaDetalle() {
               </div>
               <div className="semaforo-info">
                 <h2 className="empresa-nombre">{empresa.nombre}</h2>
-                <div
-                  className="semaforo-text"
-                  style={getSemaforoText(empresa.semaforo).style}
-                >
+                <div className="semaforo-text" style={getSemaforoText(empresa.semaforo).style}>
                   {getSemaforoText(empresa.semaforo).text}
                 </div>
               </div>
@@ -69,69 +86,77 @@ function EmpresaDetalle() {
             {/* Tabla de incumplimientos */}
             <div className="mt-4">
               <h5>Historial de Incumplimientos</h5>
-              <table className="incumplimientos-table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Razón de Incumplimiento</th>
-                    <th className="num-col">Gravedad</th>
-                    <th className="num-col">Retenciones (CLP)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {incumplimientos.length === 0 ? (
+
+              <div className="table-responsive rounded-3 shadow-sm overflow-hidden">
+                <table className="table table-striped table-hover align-middle mb-0 incumplimientos-table stacked-table">
+                  <thead>
                     <tr>
-                      <td colSpan={4} style={{ textAlign: "center", color: "#888" }}>
-                        Sin registros
-                      </td>
+                      <th>Fecha</th>
+                      <th>Razón de Incumplimiento</th>
+                      <th className="num-col text-end">Gravedad</th>
+                      <th className="num-col text-end">Retenciones (CLP)</th>
                     </tr>
-                  ) : (
-                    incumplimientos.map((inc, idx) => (
-                      <tr key={idx}>
-                        <td>{new Date(inc.fecha).toLocaleDateString()}</td>
-                        <td>{inc.razon || "-"}</td>
-                        <td className="num-col">{inc.gravedad || "-"}</td>
-                        <td className="num-col">
-                          {inc.retenciones !== undefined ? inc.retenciones.toLocaleString() : "-"}
+                  </thead>
+                  <tbody>
+                    {incumplimientos.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="text-center text-muted">
+                          Sin registros
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      incumplimientos.map((inc, idx) => (
+                        <tr key={idx}>
+                          <td data-th="Fecha">{new Date(inc.fecha).toLocaleDateString()}</td>
+                          <td data-th="Razón de Incumplimiento" className="wrap">
+                            {inc.razon || "-"}
+                          </td>
+                          <td data-th="Gravedad" className="num-col text-end">
+                            {inc.gravedad || "-"}
+                          </td>
+                          <td data-th="Retenciones (CLP)" className="num-col text-end">
+                            {inc.retenciones !== undefined ? inc.retenciones.toLocaleString() : "-"}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Tabla de cumplimientos */}
             <div className="mt-5">
               <h5>Historial de Cumplimientos</h5>
-              <table className="incumplimientos-table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Comentario</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cumplimientos.length === 0 ? (
+
+              <div className="table-responsive rounded-3 shadow-sm overflow-hidden">
+                <table className="table table-striped table-hover align-middle mb-0 incumplimientos-table stacked-table">
+                  <thead>
                     <tr>
-                      <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
-                        Sin registros
-                      </td>
+                      <th>Fecha</th>
+                      <th>Comentario</th>
                     </tr>
-                  ) : (
-                    cumplimientos.map((inc, idx) => (
-                      <tr key={idx}>
-                        <td>{new Date(inc.fecha).toLocaleDateString()}</td>
-                        <td>
-                          {inc.comentario && inc.comentario.trim() !== ""
-                            ? inc.comentario
-                            : "Sin comentario"}
+                  </thead>
+                  <tbody>
+                    {cumplimientos.length === 0 ? (
+                      <tr>
+                        <td colSpan={2} className="text-center text-muted">
+                          Sin registros
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      cumplimientos.map((inc, idx) => (
+                        <tr key={idx}>
+                          <td data-th="Fecha">{new Date(inc.fecha).toLocaleDateString()}</td>
+                          <td data-th="Comentario" className="wrap">
+                            {inc.comentario && inc.comentario.trim() !== "" ? inc.comentario : "Sin comentario"}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         ) : (

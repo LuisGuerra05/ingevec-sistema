@@ -1,8 +1,10 @@
+// frontend/src/pages/BuscarEmpresa.js
 import React, { useState, useEffect } from "react";
 import CustomSelect from "../components/CustomSelect";
 import "./BuscarEmpresa.css";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import axios from "../api/axiosInstance";
 
 function BuscarEmpresa() {
   const [empresas, setEmpresas] = useState([]);
@@ -11,19 +13,47 @@ function BuscarEmpresa() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("/api/empresas")
-      .then(res => res.json())
-      .then(data => setEmpresas(data.map(e => ({ value: e.nombre, label: e.nombre, semaforo: e.semaforo }))));
+    let mounted = true;
+    axios
+      .get("/empresas")
+      .then(({ data }) => {
+        if (!mounted) return;
+        setEmpresas(
+          data.map((e) => ({
+            value: e.nombre,
+            label: e.nombre,
+            semaforo: e.semaforo,
+          }))
+        );
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setEmpresas([]);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    if (empresaSeleccionada) {
-      fetch(`/api/empresas/${encodeURIComponent(empresaSeleccionada.value)}`)
-        .then(res => res.json())
-        .then(data => setEmpresaInfo(data));
-    } else {
+    if (!empresaSeleccionada) {
       setEmpresaInfo(null);
+      return;
     }
+    let mounted = true;
+    axios
+      .get(`/empresas/${encodeURIComponent(empresaSeleccionada.value)}`)
+      .then(({ data }) => {
+        if (!mounted) return;
+        setEmpresaInfo(data);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setEmpresaInfo(null);
+      });
+    return () => {
+      mounted = false;
+    };
   }, [empresaSeleccionada]);
 
   const getColor = (semaforo) => {
@@ -43,7 +73,7 @@ function BuscarEmpresa() {
         <CustomSelect
           options={empresas}
           value={empresaSeleccionada}
-          onChange={o => setEmpresaSeleccionada(o)}
+          onChange={(o) => setEmpresaSeleccionada(o)}
           placeholder="Seleccione una empresa..."
         />
         {empresaInfo && (
@@ -55,7 +85,7 @@ function BuscarEmpresa() {
                   height: 32,
                   borderRadius: "50%",
                   background: getColor(empresaInfo.semaforo),
-                  border: "2px solid #ccc"
+                  border: "2px solid #ccc",
                 }}
                 title={`Semáforo: ${empresaInfo.semaforo}`}
               />
@@ -73,7 +103,6 @@ function BuscarEmpresa() {
             >
               Ver detalle de la empresa
             </Button>
-
           </div>
         )}
       </div>

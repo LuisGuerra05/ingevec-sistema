@@ -1,5 +1,5 @@
 .navbar {
-  position: fixed;
+  position: fixed;   /* o usa fixed="top" en el componente (ya está) */
   width: 100%;
   top: 0;
   z-index: 1000;
@@ -7,18 +7,13 @@
   transition: top 0.4s ease-in-out;
 }
 
-.navbar-hide {
-  top: -100px;
-}
+.navbar-hide { top: -100px; }
+.navbar-show { top: 0; }
 
-.navbar-show {
-  top: 0;
-}
-
-
+/* Asegura espacio para contenido con navbar fijo */
 .page-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-top: 76px; /* ajusta según altura real del navbar */
 }
-

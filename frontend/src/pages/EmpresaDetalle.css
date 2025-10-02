@@ -1,23 +1,23 @@
 .semaforo-container {
   display: flex;
   align-items: center;
-  gap: 32px; /* separa semáforo e info */
-  margin: 0px 0 24px 0;
+  gap: 32px;
+  margin: 0 0 24px 0;
 }
 
 .semaforo-vertical {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* mayor espacio entre luces */
+  gap: 20px;
   align-items: center;
   justify-content: center;
 }
 
 .semaforo-circulo {
-  width: 55px;   /* antes 38px */
-  height: 55px;  /* antes 38px */
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
-  border: 3.5px solid #222; /* borde más grueso */
+  border: 3.5px solid #222;
   opacity: 0.25;
   transition: opacity 0.2s, box-shadow 0.2s, transform 0.2s;
 }
@@ -25,7 +25,7 @@
 .semaforo-circulo.activo {
   opacity: 1;
   box-shadow: 0 0 12px 3px rgba(0,0,0,0.15);
-  transform: scale(1.05); /* efecto leve de agrandar la activa */
+  transform: scale(1.05);
 }
 
 .semaforo-info {
@@ -36,7 +36,7 @@
 
 .empresa-nombre {
   margin: 0;
-  font-size: 1.8rem; /* un poco más grande */
+  font-size: 1.8rem;
   font-weight: 700;
   color: #0f284b;
 }
@@ -47,27 +47,66 @@
   margin-top: 6px;
 }
 
-.incumplimientos-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-  background: #f8fafc;
-  border-radius: 12px;
-  overflow: hidden;
-}
+/* --------- Tablas (desktop/tablet) --------- */
+.incumplimientos-table { background: #f8fafc; }
 
-.incumplimientos-table th, .incumplimientos-table td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #e0e7ff;
-  text-align: left;
-}
-
-.incumplimientos-table th {
-  background: #e6f2fa;
+.incumplimientos-table thead th {
+  background: #e6f2fa !important;
   color: #0f284b;
   font-weight: 600;
+  border-bottom: 1px solid #e0e7ff !important;
 }
 
-.incumplimientos-table tr:last-child td {
-  border-bottom: none;
+.incumplimientos-table td,
+.incumplimientos-table th {
+  vertical-align: middle;
+}
+
+.wrap { white-space: normal; word-break: break-word; }
+
+/* ======= MODO MÓVIL: tabla apilada como cards ======= */
+@media (max-width: 576px) {
+  /* Oculta encabezado y convierte filas en bloques */
+  .stacked-table thead {
+    display: none;
+  }
+  .stacked-table tbody tr {
+    display: block;
+    background: #fff;
+    margin: 0 0 12px 0;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    overflow: hidden;
+  }
+  .stacked-table tbody tr td {
+    display: grid;
+    grid-template-columns: 42% 58%; /* etiqueta / valor */
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: normal; /* permite saltos en móvil */
+  }
+  .stacked-table tbody tr td:last-child {
+    border-bottom: none;
+  }
+  .stacked-table tbody tr td::before {
+    content: attr(data-th);
+    font-weight: 600;
+    color: #0f284b;
+  }
+  .stacked-table .text-end {
+    text-align: left !important; /* en mobile alineamos a la izquierda */
+  }
+
+  /* Ajustes del semáforo arriba */
+  .semaforo-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .semaforo-info { align-items: center; }
+  .empresa-nombre { font-size: 1.5rem; }
+  .semaforo-text { font-size: 1.1rem; }
 }

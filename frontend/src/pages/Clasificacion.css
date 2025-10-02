@@ -1,32 +1,49 @@
+/* Lista con separación consistente */
 .lista-empresas {
-  list-style: none;
+  display: grid;
+  gap: 4px;
   padding-left: 0;
   margin: 0;
 }
 
+/* Botón de empresa: ocupa todo el ancho, permite múltiples líneas */
 .empresa-link {
-  font-size: 1rem;
-  color: var(--azul2, #0f284b);
-  text-decoration: none;
-  padding: 6px 0;
-  border-radius: 8px;
-  transition: background 0.15s;
+  color: var(--azul2, #0f284b) !important;
+  text-decoration: none !important;
+  border-radius: .5rem;
+  transition: background .15s ease;
+  /* clave: NO truncar, permitir varias líneas */
+  white-space: normal;               /* multiline */
 }
 
-.empresa-link:hover {
-  color: var(--azul2);
-  text-decoration: underline;
+.empresa-text {
+  /* rompe palabras larguísimas sin espacios */
+  overflow-wrap: anywhere;           /* estándar */
+  word-break: break-word;            /* fallback */
 }
 
-/* Cambiar fondo cuando el acordeón está abierto */
+/* Hover/focus accesibles con Bootstrap look */
+.empresa-link:hover,
+.empresa-link:focus {
+  background: #f3f6fb;
+  outline: none;
+}
+.empresa-link:focus-visible {
+  box-shadow: 0 0 0 .2rem rgba(15, 40, 75, .2);
+}
+
+/* Acordeón limpio */
 .accordion-button:not(.collapsed) {
-  background-color: #f8fafc !important;  /* pon blanco o el color que quieras */
-  color: inherit !important;             /* conserva el color del texto */
-  box-shadow: none !important;           /* elimina borde azul de foco */
+  background-color: #f8fafc !important;
+  color: inherit !important;
+  box-shadow: none !important;
 }
-
-/* También quitar el borde azul del focus */
 .accordion-button:focus {
   box-shadow: none !important;
   border-color: transparent !important;
+}
+
+/* Ajustes responsive sutiles */
+@media (max-width: 576px) {
+  .empresa-link { padding-left: .5rem; padding-right: .5rem; }
 }
