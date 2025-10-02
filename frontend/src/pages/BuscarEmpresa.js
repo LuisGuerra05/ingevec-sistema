@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import CustomSelect from "../components/CustomSelect";
 import "./BuscarEmpresa.css";
 import { useNavigate } from "react-router-dom";
-import { Form, Button, Card, Alert } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 
 function BuscarEmpresa() {
   const [empresas, setEmpresas] = useState([]);

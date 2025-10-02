@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Accordion, Card, Button } from "react-bootstrap";
+import { Accordion, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./Clasificacion.css";
 

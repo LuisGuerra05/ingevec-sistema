@@ -3,19 +3,13 @@ const Incumplimiento = require('../models/Incumplimiento');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
 
-// Crear registro
+// Crear registro (protegido)
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { empresa, fecha, incumplimiento, razon, gravedad, retenciones, comentario } = req.body;
 
     if (typeof incumplimiento !== "boolean" || !empresa || !fecha) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
-    }
-
-    if (incumplimiento) {
-      if (!razon || !gravedad) {
-        return res.status(400).json({ error: 'Debe ingresar razón y gravedad' });
-      }
     }
 
     const nuevo = new Incumplimiento({
@@ -25,7 +19,7 @@ router.post('/', requireAuth, async (req, res) => {
       razon: incumplimiento ? razon : undefined,
       gravedad: incumplimiento ? gravedad : undefined,
       retenciones: incumplimiento ? retenciones : undefined,
-      comentario: !incumplimiento ? comentario : undefined, // guardar solo si es cumplimiento
+      comentario: !incumplimiento ? comentario : undefined,
       creadoPor: req.user.email
     });
 
@@ -37,14 +31,14 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// Listar registros (por empresa si viene query)
+// Listar registros (público)
 router.get('/', async (req, res) => {
   try {
     const { empresa } = req.query;
     let query = {};
 
     if (empresa) {
-      query.empresa = { $regex: new RegExp(`^${empresa}$`, "i") }; // case-insensitive
+      query.empresa = { $regex: new RegExp(`^${empresa}$`, "i") };
     }
 
     const incumplimientos = await Incumplimiento.find(query).sort({ fecha: -1 });
