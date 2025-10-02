@@ -21,14 +21,22 @@ app.use('/api/incumplimientos', IncumplimientoRoutes);
 app.use('/api/empresas', EmpresaRoutes);
 
 // --- Servir React ---
-// subir un nivel desde backend -> luego entrar a frontend/build
-const frontendPath = path.join(__dirname, "..", "frontend", "build");
+const localFrontendPath = path.join(__dirname, "..", "frontend", "build");  // desarrollo local
+const deployedFrontendPath = path.join(__dirname, "frontend", "build");     // producción (Azure)
+
+// Usa el que exista
+const frontendPath = require("fs").existsSync(deployedFrontendPath)
+  ? deployedFrontendPath
+  : localFrontendPath;
+
 app.use(express.static(frontendPath));
 
 // Catch-all: rutas que no sean /api
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
+
+
 
 // --- Mongo ---
 mongoose.connect(MONGO_URI, { dbName: DB_NAME })
