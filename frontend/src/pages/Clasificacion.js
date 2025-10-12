@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Accordion, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Clasificacion.css";
 import axios from "../api/axiosInstance";
 
@@ -12,8 +12,11 @@ const COLOR_LABELS = {
 
 function Clasificacion() {
   const [empresas, setEmpresas] = useState({ rojo: [], amarillo: [], verde: [] });
+  const [activeKey, setActiveKey] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // --- Cargar datos ---
   useEffect(() => {
     let mounted = true;
     axios
@@ -35,6 +38,13 @@ function Clasificacion() {
     };
   }, []);
 
+  // --- Si viene un color desde Home, abrirlo automáticamente ---
+  useEffect(() => {
+    if (location.state?.color) {
+      setActiveKey(location.state.color);
+    }
+  }, [location.state]);
+
   return (
     <div className="page-bg">
       <div className="page-card">
@@ -43,7 +53,7 @@ function Clasificacion() {
           Visualice las empresas agrupadas según su nivel de riesgo en el sistema de semáforo.
         </p>
 
-        <Accordion alwaysOpen>
+        <Accordion alwaysOpen activeKey={activeKey} onSelect={(k) => setActiveKey(k)}>
           {["rojo", "amarillo", "verde"].map((color) => (
             <Accordion.Item eventKey={color} key={color}>
               <Accordion.Header>
@@ -81,7 +91,9 @@ function Clasificacion() {
                           variant="link"
                           className="empresa-link btn btn-link w-100 text-start lh-sm py-2"
                           title={e.nombre}
-                          onClick={() => navigate(`/empresa/${encodeURIComponent(e.nombre)}`)}
+                          onClick={() =>
+                            navigate(`/empresa/${encodeURIComponent(e.nombre)}`)
+                          }
                         >
                           <span className="text-break empresa-text">{e.nombre}</span>
                         </Button>

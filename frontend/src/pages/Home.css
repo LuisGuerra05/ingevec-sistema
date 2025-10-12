@@ -1,0 +1,172 @@
+/* ====== Fondo general ====== */
+.dashboard-panel {
+  background-color: #f8fafc;
+  border-radius: 16px;
+  padding: 30px;
+}
+/* ====== Card o panel principal ====== */
+.dashboard-panel {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  padding: 35px 45px;
+  max-width: 1050px;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+/* ====== Encabezado ====== */
+.titulo-dashboard {
+  font-size: 2.3rem;
+  color: #0f284b;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.5rem;
+}
+
+.subtitulo-dashboard {
+  font-size: 1.15rem;
+  color: #2c4a77;
+  margin-bottom: 0.5rem;
+}
+
+.descripcion-dashboard {
+  font-size: 1.05rem;
+  color: #33425a;
+  margin: 10px auto 0;
+  max-width: 800px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* ====== Círculos del semáforo ====== */
+.semaforo-circulo-home {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  border: 5px solid #111;
+  box-sizing: content-box;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.semaforo-circulo-home:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 18px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ====== Tarjetas métricas ====== */
+.metric-card {
+  background-color: #eff4ff; /* blanco con leve tono azulado */
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08); /* borde más perceptible */
+  padding: 16px 20px;
+  min-width: 320px;
+  max-width: 400px;
+  margin-left: 40px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); /* sombra más marcada */
+}
+
+.metric-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.metric-card .dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.metric-card h4 {
+  font-size: 1.5rem;
+  margin-bottom: 0;
+}
+
+.metric-card small {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* ====== Tarjetas inferiores ====== */
+.info-card {
+  background-color: #eff4ff; /* igual tono */
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08); /* borde visible */
+  padding: 22px 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); /* más contraste */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.info-card h3 {
+  font-size: 1.6rem;
+  margin-top: 4px;
+}
+
+.info-card h5 {
+  font-size: 1.1rem;
+}
+
+/* ====== Separación inferior ====== */
+.metricas-inferiores {
+  margin-top: 3.5rem !important;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 992px) {
+  .dashboard-panel {
+    padding: 25px 30px;
+  }
+
+  .titulo-dashboard {
+    font-size: 2rem;
+  }
+
+  .semaforo-circulo-home {
+    width: 75px;
+    height: 75px;
+    border: 4px solid #000;
+  }
+
+  .metric-card {
+    min-width: 80%;
+    margin-left: 0;
+  }
+
+  .metric-card h4 {
+    font-size: 1.4rem;
+  }
+
+  .info-card h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-panel {
+    padding: 20px;
+  }
+
+  .titulo-dashboard {
+    font-size: 1.7rem;
+  }
+
+  .descripcion-dashboard {
+    font-size: 0.95rem;
+  }
+
+  .semaforo-circulo-home {
+    width: 70px;
+    height: 70px;
+  }
+
+  .metric-card {
+    width: 90%;
+    min-width: unset;
+    margin-left: 0;
+  }
+}
