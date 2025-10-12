@@ -1,6 +1,9 @@
+// routes/IncumplimientoRoutes.js
 const express = require('express');
 const Incumplimiento = require('../models/Incumplimiento');
 const requireAuth = require('../middleware/requireAuth');
+const { calcularColorEmpresa } = require('../utils/calculateRisk');
+
 const router = express.Router();
 
 // Crear registro (protegido)
@@ -20,10 +23,14 @@ router.post('/', requireAuth, async (req, res) => {
       gravedad: incumplimiento ? gravedad : undefined,
       retenciones: incumplimiento ? retenciones : undefined,
       comentario: !incumplimiento ? comentario : undefined,
-      creadoPor: req.user.email
+      creadoPor: req.user.email,
     });
 
     await nuevo.save();
+
+    // 🔁 Recalcular color de la empresa
+    await calcularColorEmpresa(empresa);
+
     res.json({ ok: true, incumplimiento: nuevo });
   } catch (err) {
     console.error(err);
@@ -31,16 +38,13 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// Listar registros (público)
+// Listar registros
 router.get('/', async (req, res) => {
   try {
     const { empresa } = req.query;
-    let query = {};
-
-    if (empresa) {
-      query.empresa = { $regex: new RegExp(`^${empresa}$`, "i") };
-    }
-
+    const query = empresa
+      ? { empresa: { $regex: new RegExp(`^${empresa}$`, "i") } }
+      : {};
     const incumplimientos = await Incumplimiento.find(query).sort({ fecha: -1 });
     res.json(incumplimientos);
   } catch (err) {

@@ -19,8 +19,9 @@ function IngresarDatos() {
   const [comentario, setComentario] = useState("");
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
+  const [colorActual, setColorActual] = useState(null); // 🔹 color actual de la empresa
 
-  // --- Solo números enteros en "Retenciones" (mejor soporte en móvil) ---
+  // --- Solo números enteros en "Retenciones" ---
   const onlyDigits = (str) => (str || "").replace(/[^\d]/g, "");
   const handleRetencionesChange = (e) => {
     const cleaned = onlyDigits(e.target.value);
@@ -30,7 +31,7 @@ function IngresarDatos() {
     if (e.data && /\D/.test(e.data)) e.preventDefault();
   };
   const preventNonDigitsKeyDown = (e) => {
-    const allowedKeys = ["Backspace","Delete","ArrowLeft","ArrowRight","Home","End","Tab","Enter"];
+    const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Home", "End", "Tab", "Enter"];
     if (allowedKeys.includes(e.key)) return;
     if (!/^\d$/.test(e.key)) e.preventDefault();
   };
@@ -51,6 +52,18 @@ function IngresarDatos() {
     const t = setTimeout(() => setOk(""), 3000);
     return () => clearTimeout(t);
   }, [ok]);
+
+  // --- Consultar color actual cada vez que cambia empresa o se guarda un nuevo registro ---
+  useEffect(() => {
+    if (!empresa) {
+      setColorActual(null);
+      return;
+    }
+    axios
+      .get(`/empresas/${encodeURIComponent(empresa)}`)
+      .then(({ data }) => setColorActual(data?.semaforo || null))
+      .catch(() => setColorActual(null));
+  }, [empresa, ok]); // 👈 se ejecuta también al guardar
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,6 +104,12 @@ function IngresarDatos() {
 
       if (data.ok) {
         setOk("Registro guardado correctamente");
+
+        // 🔁 Actualizar color actual tras guardar
+        const res = await axios.get(`/empresas/${encodeURIComponent(empresa)}`);
+        setColorActual(res.data?.semaforo || null);
+
+        // 🔄 Limpiar formulario
         setEmpresa("");
         setFecha("");
         setIncumplimiento(false);
@@ -104,6 +123,14 @@ function IngresarDatos() {
     } catch (err) {
       setError(err?.response?.data?.error || "Error de conexión con el servidor");
     }
+  };
+
+  // --- función auxiliar para mostrar color ---
+  const renderEstadoColor = () => {
+    if (colorActual === "rojo") return <span style={{ color: "#e53935", fontWeight: "bold" }}>Alto riesgo</span>;
+    if (colorActual === "amarillo") return <span style={{ color: "#fbc02d", fontWeight: "bold" }}>Riesgo medio</span>;
+    if (colorActual === "verde") return <span style={{ color: "#43a047", fontWeight: "bold" }}>Bajo riesgo</span>;
+    return <span style={{ color: "#888" }}>Sin color asignado (sin incumplimientos)</span>;
   };
 
   return (
@@ -219,32 +246,29 @@ function IngresarDatos() {
             </Form.Group>
           )}
 
-          {/* Alerts autodescartables */}
-        {error && (
-          <Alert
-            variant="danger"
-            dismissible
-            onClose={() => setError("")}
-            className="mb-3"
-          >
-            {error}
-          </Alert>
-        )}
-        {ok && (
-          <Alert
-            variant="success"
-            dismissible
-            onClose={() => setOk("")}
-            className="mb-3"
-          >
-            {ok}
-          </Alert>
-        )}
-        
+          {/* Alerts */}
+          {error && (
+            <Alert variant="danger" dismissible onClose={() => setError("")} className="mb-3">
+              {error}
+            </Alert>
+          )}
+          {ok && (
+            <Alert variant="success" dismissible onClose={() => setOk("")} className="mb-3">
+              {ok}
+            </Alert>
+          )}
+
           <Button type="submit" variant="primary" className="w-100 mt-2" size="lg">
             Guardar
           </Button>
         </Form>
+
+        {/* Estado actual del color */}
+        {empresa && (
+          <div className="text-center mt-4">
+            <strong>Estado actual:</strong> {renderEstadoColor()}
+          </div>
+        )}
       </Card>
     </div>
   );

@@ -1,10 +1,11 @@
+// routes/EmpresaRoutes.js
 const express = require('express');
 const Empresa = require('../models/Empresa');
 const requireAuth = require('../middleware/requireAuth');
+const { calcularColorEmpresa } = require('../utils/calculateRisk');
 const router = express.Router();
 
 // --- RUTAS PÚBLICAS ---
-// Listar todas las empresas
 router.get('/', async (req, res) => {
   try {
     const empresas = await Empresa.find({});
@@ -15,11 +16,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Buscar una empresa por nombre (case-insensitive)
 router.get('/:nombre', async (req, res) => {
   try {
     const empresa = await Empresa.findOne({
-      nombre: { $regex: new RegExp(`^${req.params.nombre}$`, "i") }
+      nombre: { $regex: new RegExp(`^${req.params.nombre}$`, "i") },
     });
     res.json(empresa);
   } catch (err) {
@@ -29,15 +29,14 @@ router.get('/:nombre', async (req, res) => {
 });
 
 // --- RUTAS PROTEGIDAS ---
-// Crear nueva empresa
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { nombre, semaforo } = req.body;
-    if (!nombre || !semaforo) {
-      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    const { nombre } = req.body;
+    if (!nombre) {
+      return res.status(400).json({ error: 'Falta nombre de empresa' });
     }
 
-    const nueva = new Empresa({ nombre, semaforo });
+    const nueva = new Empresa({ nombre }); // 🔹 sin color por defecto
     await nueva.save();
     res.json({ ok: true, empresa: nueva });
   } catch (err) {
@@ -70,6 +69,20 @@ router.delete('/:id', requireAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al eliminar empresa' });
+  }
+});
+
+// 🔁 Recalcular colores manualmente
+router.post('/recalcular', requireAuth, async (req, res) => {
+  try {
+    const empresas = await Empresa.find({});
+    for (const emp of empresas) {
+      await calcularColorEmpresa(emp.nombre);
+    }
+    res.json({ ok: true, msg: 'Colores recalculados para todas las empresas' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al recalcular colores' });
   }
 });
 
