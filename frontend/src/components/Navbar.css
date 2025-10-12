@@ -17,3 +17,14 @@
   flex-direction: column;
   padding-top: 76px; /* ajusta según altura real del navbar */
 }
+
+.modal-content {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
