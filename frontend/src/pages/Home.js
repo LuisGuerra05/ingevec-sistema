@@ -1,3 +1,4 @@
+// ...importaciones previas
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +9,7 @@ const SEMAFORO_COLORS = {
   rojo: "#e53935",
   amarillo: "#fbc02d",
   verde: "#43a047",
+  gris: "#9e9e9e",
 };
 
 function Home() {
@@ -36,11 +38,8 @@ function Home() {
         const incumplimientos = incumplimientosRes.data;
 
         let conteo = { verde: 0, amarillo: 0, rojo: 0, sinColor: 0, total: 0 };
-
-        // 🔹 Total de empresas
         conteo.total = empresas.length;
 
-        // 🔹 Clasificar por color de semáforo
         empresas.forEach((e) => {
           if (e.semaforo === "verde") conteo.verde++;
           else if (e.semaforo === "amarillo") conteo.amarillo++;
@@ -48,7 +47,6 @@ function Home() {
           else conteo.sinColor++;
         });
 
-        // 🔹 Calcular cuántas empresas tienen al menos un registro en incumplimientos
         const empresasConRegistro = new Set(
           incumplimientos.map((i) => i.empresa.trim().toLowerCase())
         );
@@ -57,10 +55,8 @@ function Home() {
           empresasConRegistro.has(e.nombre.trim().toLowerCase())
         ).length;
 
-        // 🔹 Empresas sin registro real
         const sinRegistro = conteo.total - totalConRegistro;
 
-        // 🔹 KPI de trazabilidad digital
         const kpiTrazabilidad =
           conteo.total > 0
             ? ((totalConRegistro / conteo.total) * 100).toFixed(1)
@@ -68,7 +64,7 @@ function Home() {
 
         setStats({
           ...conteo,
-          sinColor: sinRegistro, // ahora se basa en registros reales
+          sinColor: sinRegistro,
           kpiTrazabilidad,
         });
       } catch (err) {
@@ -81,7 +77,6 @@ function Home() {
     fetchData();
   }, []);
 
-  // --- Navegación a la clasificación por color ---
   const handleNavigate = (color) => {
     navigate("/clasificacion", { state: { color } });
   };
@@ -112,41 +107,22 @@ function Home() {
             <>
               {/* === Sección del Semáforo === */}
               <Container className="mt-4">
-                {[
-                  {
-                    color: "rojo",
-                    label: "Empresas en alto riesgo",
-                    value: stats.rojo,
-                  },
-                  {
-                    color: "amarillo",
-                    label: "Empresas en riesgo medio",
-                    value: stats.amarillo,
-                  },
-                  {
-                    color: "verde",
-                    label: "Empresas en bajo riesgo",
-                    value: stats.verde,
-                  },
-                ].map((item, idx) => (
+                {["rojo", "amarillo", "verde"].map((color, idx) => (
                   <Row
                     key={idx}
                     className="align-items-center justify-content-center mb-4 flex-wrap"
-                    onClick={() => handleNavigate(item.color)}
+                    onClick={() => handleNavigate(color)}
                     style={{ cursor: "pointer" }}
                   >
-                    <Col
-                      xs="auto"
-                      className="d-flex justify-content-center mb-3 mb-md-0"
-                    >
+                    <Col xs="auto" className="d-flex justify-content-center mb-3 mb-md-0">
                       <div
                         className="semaforo-circulo-home"
                         style={{
-                          background: SEMAFORO_COLORS[item.color],
-                          opacity: item.value > 0 ? 1 : 0.4,
+                          background: SEMAFORO_COLORS[color],
+                          opacity: stats[color] > 0 ? 1 : 0.4,
                           boxShadow:
-                            item.value > 0
-                              ? `0 0 25px 8px ${SEMAFORO_COLORS[item.color]}80`
+                            stats[color] > 0
+                              ? `0 0 25px 8px ${SEMAFORO_COLORS[color]}80`
                               : "none",
                         }}
                       ></div>
@@ -158,16 +134,24 @@ function Home() {
                           <div>
                             <h4
                               className={`fw-bold mb-0 text-${
-                                item.color === "rojo"
+                                color === "rojo"
                                   ? "danger"
-                                  : item.color === "amarillo"
+                                  : color === "amarillo"
                                   ? "warning"
                                   : "success"
                               }`}
                             >
-                              {item.value}
+                              {stats[color]}
                             </h4>
-                            <small className="text-muted">{item.label}</small>
+                            <small className="text-muted">
+                              {`Empresas en ${
+                                color === "rojo"
+                                  ? "alto riesgo"
+                                  : color === "amarillo"
+                                  ? "riesgo medio"
+                                  : "bajo riesgo"
+                              }`}
+                            </small>
                           </div>
                         </Card.Body>
                       </Card>
@@ -179,11 +163,13 @@ function Home() {
               {/* === Tarjetas inferiores === */}
               <Row className="justify-content-center metricas-inferiores mt-4">
                 <Col xs={12} md={5} className="mb-3 mb-md-0">
-                  <Card className="info-card shadow-sm border-0 text-center">
+                  <Card
+                    className="info-card shadow-sm border-0 text-center"
+                    onClick={() => handleNavigate("gris")}
+                    style={{ cursor: "pointer" }}
+                  >
                     <Card.Body>
-                      <h5 className="fw-semibold mb-1">
-                        Empresas sin registros
-                      </h5>
+                      <h5 className="fw-semibold mb-1">Empresas sin registros</h5>
                       <h3 className="fw-bold text-secondary mb-0">
                         {stats.sinColor}
                       </h3>

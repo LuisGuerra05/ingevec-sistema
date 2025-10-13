@@ -8,11 +8,22 @@ const COLOR_LABELS = {
   rojo: { label: "Alto riesgo", color: "#e53935" },
   amarillo: { label: "Riesgo medio", color: "#fbc02d" },
   verde: { label: "Bajo riesgo", color: "#43a047" },
+  gris: { label: "Sin registros", color: "#9e9e9e" },
 };
 
 function Clasificacion() {
-  const [empresas, setEmpresas] = useState({ rojo: [], amarillo: [], verde: [] });
-  const [loading, setLoading] = useState({ rojo: true, amarillo: true, verde: true });
+  const [empresas, setEmpresas] = useState({
+    rojo: [],
+    amarillo: [],
+    verde: [],
+    gris: [],
+  });
+  const [loading, setLoading] = useState({
+    rojo: true,
+    amarillo: true,
+    verde: true,
+    gris: true,
+  });
   const [activeKey, setActiveKey] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,18 +37,31 @@ function Clasificacion() {
       .then(({ data }) => {
         if (!mounted) return;
 
-        const agrupadas = { rojo: [], amarillo: [], verde: [] };
+        const agrupadas = { rojo: [], amarillo: [], verde: [], gris: [] };
         data.forEach((e) => {
-          if (agrupadas[e.semaforo]) agrupadas[e.semaforo].push(e);
+          if (e.semaforo === "rojo") agrupadas.rojo.push(e);
+          else if (e.semaforo === "amarillo") agrupadas.amarillo.push(e);
+          else if (e.semaforo === "verde") agrupadas.verde.push(e);
+          else agrupadas.gris.push(e);
         });
 
         setEmpresas(agrupadas);
-        setLoading({ rojo: false, amarillo: false, verde: false });
+        setLoading({
+          rojo: false,
+          amarillo: false,
+          verde: false,
+          gris: false,
+        });
       })
       .catch(() => {
         if (!mounted) return;
-        setEmpresas({ rojo: [], amarillo: [], verde: [] });
-        setLoading({ rojo: false, amarillo: false, verde: false });
+        setEmpresas({ rojo: [], amarillo: [], verde: [], gris: [] });
+        setLoading({
+          rojo: false,
+          amarillo: false,
+          verde: false,
+          gris: false,
+        });
       });
 
     return () => {
@@ -61,7 +85,7 @@ function Clasificacion() {
         </p>
 
         <Accordion alwaysOpen activeKey={activeKey} onSelect={(k) => setActiveKey(k)}>
-          {["rojo", "amarillo", "verde"].map((color) => (
+          {["rojo", "amarillo", "verde", "gris"].map((color) => (
             <Accordion.Item eventKey={color} key={color}>
               <Accordion.Header>
                 <span
@@ -98,7 +122,9 @@ function Clasificacion() {
                           ? "danger"
                           : color === "amarillo"
                           ? "warning"
-                          : "success"
+                          : color === "verde"
+                          ? "success"
+                          : "secondary"
                       }
                     />
                     <div className="text-muted small mt-2">
