@@ -1,9 +1,9 @@
-// src/pages/IngresarDatos.js
 import React, { useEffect, useState } from "react";
-import { Form, Button, Card, Alert } from "react-bootstrap";
+import { Form, Button, Card, Alert, InputGroup } from "react-bootstrap";
 import "./IngresarDatos.css";
 import CustomSelect from "../components/CustomSelect";
 import axios from "../api/axiosInstance";
+import { PlusCircle } from "react-bootstrap-icons";
 
 function IngresarDatos() {
   const [empresa, setEmpresa] = useState("");
@@ -17,11 +17,15 @@ function IngresarDatos() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [colorActual, setColorActual] = useState(null);
+
   const [empresas, setEmpresas] = useState([]);
   const [razones, setRazones] = useState([]);
   const [obras, setObras] = useState([]);
 
-  // === Cargar opciones desde la BD ===
+  const [modoNueva, setModoNueva] = useState({ empresa: false, obra: false, razon: false });
+  const [valorNuevo, setValorNuevo] = useState({ empresa: "", obra: "", razon: "" });
+
+  // === Cargar opciones desde BD ===
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,24 +35,9 @@ function IngresarDatos() {
           axios.get("/opciones/obra/list"),
         ]);
 
-        const empresasOrdenadas = empRes.data
-          .map((e) => e.nombre)
-          .filter(Boolean)
-          .sort((a, b) => a.localeCompare(b));
-
-        const razonesOrdenadas = razRes.data
-          .map((r) => r.nombre)
-          .filter(Boolean)
-          .sort((a, b) => a.localeCompare(b));
-
-        const obrasOrdenadas = obrRes.data
-          .map((o) => o.nombre)
-          .filter(Boolean)
-          .sort((a, b) => a.localeCompare(b));
-
-        setEmpresas(empresasOrdenadas);
-        setRazones(razonesOrdenadas);
-        setObras(obrasOrdenadas);
+        setEmpresas(empRes.data.map((e) => e.nombre).filter(Boolean).sort());
+        setRazones(razRes.data.map((r) => r.nombre).filter(Boolean).sort());
+        setObras(obrRes.data.map((o) => o.nombre).filter(Boolean).sort());
       } catch (err) {
         console.error("❌ Error cargando opciones:", err);
         setError("No se pudieron cargar las opciones desde la base de datos.");
@@ -57,7 +46,7 @@ function IngresarDatos() {
     fetchData();
   }, []);
 
-  // === Actualizar color de empresa seleccionada ===
+  // === Actualizar color empresa ===
   useEffect(() => {
     if (!empresa) {
       setColorActual(null);
@@ -77,45 +66,59 @@ function IngresarDatos() {
     if (ok) setTimeout(() => setOk(""), 3000);
   }, [ok]);
 
-  // === Crear nueva opción (empresa, razón u obra) ===
-  const agregarNuevaOpcion = async (tipo, valor) => {
-    if (!valor) return;
+  // === Guardar nuevas opciones solo si no existen ===
+  const guardarOpcionesNuevas = async () => {
     try {
-      await axios.post(`/opciones/${tipo}`, { valor });
-      if (tipo === "empresa")
-        setEmpresas((prev) => [...new Set([...prev, valor])].sort());
-      if (tipo === "razon")
-        setRazones((prev) => [...new Set([...prev, valor])].sort());
-      if (tipo === "obra")
-        setObras((prev) => [...new Set([...prev, valor])].sort());
-    } catch {
-      console.error("Error guardando nueva opción");
+      if (modoNueva.empresa && valorNuevo.empresa) {
+        await axios.post("/opciones/empresa", { valor: valorNuevo.empresa });
+        setEmpresas((prev) => [...new Set([...prev, valorNuevo.empresa])].sort());
+        setEmpresa(valorNuevo.empresa);
+      }
+      if (modoNueva.obra && valorNuevo.obra) {
+        await axios.post("/opciones/obra", { valor: valorNuevo.obra });
+        setObras((prev) => [...new Set([...prev, valorNuevo.obra])].sort());
+        setObra(valorNuevo.obra);
+      }
+      if (modoNueva.razon && valorNuevo.razon) {
+        await axios.post("/opciones/razon", { valor: valorNuevo.razon });
+        setRazones((prev) => [...new Set([...prev, valorNuevo.razon])].sort());
+        setRazon(valorNuevo.razon);
+      }
+    } catch (err) {
+      console.error("Error guardando opciones nuevas:", err);
     }
   };
 
-  // === Enviar formulario ===
+  // === Enviar formulario completo ===
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setOk("");
 
-    if (!empresa || !fecha || !obra) {
+    // Primero guardamos nuevas opciones si las hay
+    await guardarOpcionesNuevas();
+
+    const empresaFinal = modoNueva.empresa ? valorNuevo.empresa : empresa;
+    const obraFinal = modoNueva.obra ? valorNuevo.obra : obra;
+    const razonFinal = modoNueva.razon ? valorNuevo.razon : razon;
+
+    if (!empresaFinal || !fecha || !obraFinal) {
       setError("Todos los campos son obligatorios");
       return;
     }
 
-    if (incumplimiento && (!razon || !gravedad)) {
+    if (incumplimiento && (!razonFinal || !gravedad)) {
       setError("Debe ingresar razón y gravedad");
       return;
     }
 
     try {
       const payload = {
-        empresa,
-        obra,
+        empresa: empresaFinal,
+        obra: obraFinal,
         fecha,
         incumplimiento,
-        razon: incumplimiento ? razon : undefined,
+        razon: incumplimiento ? razonFinal : undefined,
         gravedad: incumplimiento ? gravedad : undefined,
         retencionSiNo: retencionSiNo ? "Sí" : "No",
         comentario: !incumplimiento ? comentario : undefined,
@@ -125,18 +128,19 @@ function IngresarDatos() {
 
       if (data.ok) {
         setOk("Registro guardado correctamente");
-        const res = await axios.get(`/empresas/${encodeURIComponent(empresa)}`);
+        const res = await axios.get(`/empresas/${encodeURIComponent(empresaFinal)}`);
         setColorActual(res.data?.semaforo || null);
 
-        // reset
+        // Reset
         setEmpresa("");
         setObra("");
-        setFecha("");
-        setIncumplimiento(false);
         setRazon("");
+        setFecha("");
         setGravedad(1);
         setRetencionSiNo(false);
         setComentario("");
+        setModoNueva({ empresa: false, obra: false, razon: false });
+        setValorNuevo({ empresa: "", obra: "", razon: "" });
       } else {
         setError(data.error || "Error al guardar");
       }
@@ -155,6 +159,50 @@ function IngresarDatos() {
     return <span style={{ color: "#888" }}>Sin color asignado</span>;
   };
 
+  // === Select con opción de nueva entrada ===
+  const renderSelector = (tipo, label, lista, valor, setValor) => (
+    <Form.Group className="mb-3">
+      <Form.Label>{label}</Form.Label>
+
+      {modoNueva[tipo] ? (
+        <Form.Control
+          type="text"
+          placeholder={`Escriba nueva ${label.toLowerCase()}...`}
+          value={valorNuevo[tipo]}
+          onChange={(e) =>
+            setValorNuevo((prev) => ({ ...prev, [tipo]: e.target.value }))
+          }
+          required
+        />
+      ) : (
+        <CustomSelect
+          options={[
+            ...lista.map((x) => ({ value: x, label: x })),
+            {
+              value: "Nueva",
+              label: (
+                <span>
+                  <PlusCircle className="me-1" /> Nueva...
+                </span>
+              ),
+            },
+          ]}
+          value={valor ? { value: valor, label: valor } : null}
+          onChange={(o) => {
+            if (o.value === "Nueva") {
+              setModoNueva((prev) => ({ ...prev, [tipo]: true }));
+              setValorNuevo((prev) => ({ ...prev, [tipo]: "" }));
+            } else {
+              setValor(o.value);
+            }
+          }}
+          placeholder={`Seleccione una ${label.toLowerCase()}...`}
+        />
+      )}
+    </Form.Group>
+  );
+
+
   return (
     <div className="page-bg">
       <Card className="page-card">
@@ -164,51 +212,9 @@ function IngresarDatos() {
         </p>
 
         <Form onSubmit={handleSubmit}>
-          {/* Empresa */}
-          <Form.Group className="mb-3">
-            <Form.Label>Nombre de la Empresa</Form.Label>
-            <CustomSelect
-              options={[
-                ...empresas.map((e) => ({ value: e, label: e })),
-                { value: "Nueva", label: "➕ Nueva..." },
-              ]}
-              value={empresa ? { value: empresa, label: empresa } : null}
-              onChange={(o) => {
-                if (o.value === "Nueva") {
-                  const nueva = prompt("Ingrese el nombre de la nueva empresa:");
-                  if (nueva) agregarNuevaOpcion("empresa", nueva);
-                  setEmpresa(nueva || "");
-                } else {
-                  setEmpresa(o.value);
-                }
-              }}
-              placeholder="Seleccione una empresa..."
-            />
-          </Form.Group>
+          {renderSelector("empresa", "Nombre de la Empresa", empresas, empresa, setEmpresa)}
+          {renderSelector("obra", "Obra", obras, obra, setObra)}
 
-          {/* Obra */}
-          <Form.Group className="mb-3">
-            <Form.Label>Obra</Form.Label>
-            <CustomSelect
-              options={[
-                ...obras.map((o) => ({ value: o, label: o })),
-                { value: "Nueva", label: "➕ Nueva..." },
-              ]}
-              value={obra ? { value: obra, label: obra } : null}
-              onChange={(o) => {
-                if (o.value === "Nueva") {
-                  const nueva = prompt("Ingrese el nombre de la nueva obra:");
-                  if (nueva) agregarNuevaOpcion("obra", nueva);
-                  setObra(nueva || "");
-                } else {
-                  setObra(o.value);
-                }
-              }}
-              placeholder="Seleccione una obra..."
-            />
-          </Form.Group>
-
-          {/* Fecha */}
           <Form.Group className="mb-3">
             <Form.Label>Fecha</Form.Label>
             <Form.Control
@@ -219,7 +225,6 @@ function IngresarDatos() {
             />
           </Form.Group>
 
-          {/* Incumplimiento */}
           <Form.Group className="mb-3">
             <Form.Label>¿Hubo Incumplimiento?</Form.Label>
             <div>
@@ -246,26 +251,7 @@ function IngresarDatos() {
 
           {incumplimiento ? (
             <>
-              <Form.Group className="mb-3">
-                <Form.Label>Razón de Incumplimiento</Form.Label>
-                <CustomSelect
-                  options={[
-                    ...razones.map((r) => ({ value: r, label: r })),
-                    { value: "Nueva", label: "➕ Nueva..." },
-                  ]}
-                  value={razon ? { value: razon, label: razon } : null}
-                  onChange={(o) => {
-                    if (o.value === "Nueva") {
-                      const nueva = prompt("Ingrese una nueva razón:");
-                      if (nueva) agregarNuevaOpcion("razon", nueva);
-                      setRazon(nueva || "");
-                    } else {
-                      setRazon(o.value);
-                    }
-                  }}
-                  placeholder="Seleccione una razón..."
-                />
-              </Form.Group>
+              {renderSelector("razon", "Razón de Incumplimiento", razones, razon, setRazon)}
 
               <Form.Group className="mb-3">
                 <Form.Label>¿Hubo Retención?</Form.Label>
