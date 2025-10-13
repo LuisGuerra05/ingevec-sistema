@@ -23,30 +23,56 @@ function Home() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const navigate = useNavigate();
 
-  // --- cargar datos ---
+  // --- Cargar datos de empresas + incumplimientos ---
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("/empresas");
+        const [empresasRes, incumplimientosRes] = await Promise.all([
+          axios.get("/empresas"),
+          axios.get("/incumplimientos"),
+        ]);
+
+        const empresas = empresasRes.data;
+        const incumplimientos = incumplimientosRes.data;
 
         let conteo = { verde: 0, amarillo: 0, rojo: 0, sinColor: 0, total: 0 };
-        data.forEach((e) => {
+
+        // 🔹 Total de empresas
+        conteo.total = empresas.length;
+
+        // 🔹 Clasificar por color de semáforo
+        empresas.forEach((e) => {
           if (e.semaforo === "verde") conteo.verde++;
           else if (e.semaforo === "amarillo") conteo.amarillo++;
           else if (e.semaforo === "rojo") conteo.rojo++;
           else conteo.sinColor++;
         });
-        conteo.total = data.length;
 
-        const conTrazabilidad = conteo.total - conteo.sinColor;
+        // 🔹 Calcular cuántas empresas tienen al menos un registro en incumplimientos
+        const empresasConRegistro = new Set(
+          incumplimientos.map((i) => i.empresa.trim().toLowerCase())
+        );
+
+        const totalConRegistro = empresas.filter((e) =>
+          empresasConRegistro.has(e.nombre.trim().toLowerCase())
+        ).length;
+
+        // 🔹 Empresas sin registro real
+        const sinRegistro = conteo.total - totalConRegistro;
+
+        // 🔹 KPI de trazabilidad digital
         const kpiTrazabilidad =
           conteo.total > 0
-            ? ((conTrazabilidad / conteo.total) * 100).toFixed(1)
+            ? ((totalConRegistro / conteo.total) * 100).toFixed(1)
             : 0;
 
-        setStats({ ...conteo, kpiTrazabilidad });
+        setStats({
+          ...conteo,
+          sinColor: sinRegistro, // ahora se basa en registros reales
+          kpiTrazabilidad,
+        });
       } catch (err) {
-        console.error("Error al cargar datos:", err);
+        console.error("❌ Error al cargar datos:", err);
       } finally {
         setLoading(false);
       }
@@ -55,7 +81,7 @@ function Home() {
     fetchData();
   }, []);
 
-  // --- función para ir a clasificación ---
+  // --- Navegación a la clasificación por color ---
   const handleNavigate = (color) => {
     navigate("/clasificacion", { state: { color } });
   };
@@ -106,7 +132,7 @@ function Home() {
                   <Row
                     key={idx}
                     className="align-items-center justify-content-center mb-4 flex-wrap"
-                    onClick={() => handleNavigate(item.color)} // 👈 redirección
+                    onClick={() => handleNavigate(item.color)}
                     style={{ cursor: "pointer" }}
                   >
                     <Col

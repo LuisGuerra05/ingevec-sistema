@@ -22,7 +22,7 @@ app.use(express.json());
 app.use('/api', UserRoutes);
 app.use('/api/incumplimientos', IncumplimientoRoutes);
 app.use('/api/empresas', EmpresaRoutes);
-app.use("/opciones", opcionesRoutes);
+app.use("/api/opciones", opcionesRoutes);
 
 // --- Servir React ---
 const localFrontendPath = path.join(__dirname, "..", "frontend", "build");  // desarrollo local

@@ -1,3 +1,4 @@
+// src/pages/IngresarDatos.js
 import React, { useEffect, useState } from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import "./IngresarDatos.css";
@@ -20,39 +21,50 @@ function IngresarDatos() {
   const [razones, setRazones] = useState([]);
   const [obras, setObras] = useState([]);
 
-  // === Cargar opciones de base de datos ===
+  // === Cargar opciones desde la BD ===
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [empRes, razRes, obrRes] = await Promise.all([
-          axios.get("/api/opciones/empresa/list"),
-          axios.get("/api/opciones/razon/list"),
-          axios.get("/api/opciones/obra/list"),
+          axios.get("/opciones/empresa/list"),
+          axios.get("/opciones/razon/list"),
+          axios.get("/opciones/obra/list"),
         ]);
 
-        const empresasOrdenadas = empRes.data.map((e) => e.nombre).sort((a, b) => a.localeCompare(b));
-        const razonesOrdenadas = razRes.data.map((r) => r.nombre).sort((a, b) => a.localeCompare(b));
-        const obrasOrdenadas = obrRes.data.map((o) => o.nombre).sort((a, b) => a.localeCompare(b));
+        const empresasOrdenadas = empRes.data
+          .map((e) => e.nombre)
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+
+        const razonesOrdenadas = razRes.data
+          .map((r) => r.nombre)
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+
+        const obrasOrdenadas = obrRes.data
+          .map((o) => o.nombre)
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
 
         setEmpresas(empresasOrdenadas);
         setRazones(razonesOrdenadas);
         setObras(obrasOrdenadas);
-      } catch (error) {
-        console.error("❌ Error cargando opciones:", error);
+      } catch (err) {
+        console.error("❌ Error cargando opciones:", err);
+        setError("No se pudieron cargar las opciones desde la base de datos.");
       }
     };
-
     fetchData();
   }, []);
 
-  // === Actualizar color actual ===
+  // === Actualizar color de empresa seleccionada ===
   useEffect(() => {
     if (!empresa) {
       setColorActual(null);
       return;
     }
     axios
-      .get(`/api/empresas/${encodeURIComponent(empresa)}`)
+      .get(`/empresas/${encodeURIComponent(empresa)}`)
       .then(({ data }) => setColorActual(data?.semaforo || null))
       .catch(() => setColorActual(null));
   }, [empresa, ok]);
@@ -69,7 +81,7 @@ function IngresarDatos() {
   const agregarNuevaOpcion = async (tipo, valor) => {
     if (!valor) return;
     try {
-      await axios.post(`/api/opciones/${tipo}`, { valor });
+      await axios.post(`/opciones/${tipo}`, { valor });
       if (tipo === "empresa")
         setEmpresas((prev) => [...new Set([...prev, valor])].sort());
       if (tipo === "razon")
@@ -109,12 +121,14 @@ function IngresarDatos() {
         comentario: !incumplimiento ? comentario : undefined,
       };
 
-      const { data } = await axios.post("/api/incumplimientos", payload);
+      const { data } = await axios.post("/incumplimientos", payload);
 
       if (data.ok) {
         setOk("Registro guardado correctamente");
-        const res = await axios.get(`/api/empresas/${encodeURIComponent(empresa)}`);
+        const res = await axios.get(`/empresas/${encodeURIComponent(empresa)}`);
         setColorActual(res.data?.semaforo || null);
+
+        // reset
         setEmpresa("");
         setObra("");
         setFecha("");
