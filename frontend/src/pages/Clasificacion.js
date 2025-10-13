@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Accordion, Button } from "react-bootstrap";
+import { Accordion, Button, Spinner } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Clasificacion.css";
 import axios from "../api/axiosInstance";
@@ -12,6 +12,7 @@ const COLOR_LABELS = {
 
 function Clasificacion() {
   const [empresas, setEmpresas] = useState({ rojo: [], amarillo: [], verde: [] });
+  const [loading, setLoading] = useState({ rojo: true, amarillo: true, verde: true });
   const [activeKey, setActiveKey] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,20 +20,26 @@ function Clasificacion() {
   // --- Cargar datos ---
   useEffect(() => {
     let mounted = true;
+
     axios
       .get("/empresas")
       .then(({ data }) => {
         if (!mounted) return;
+
         const agrupadas = { rojo: [], amarillo: [], verde: [] };
         data.forEach((e) => {
           if (agrupadas[e.semaforo]) agrupadas[e.semaforo].push(e);
         });
+
         setEmpresas(agrupadas);
+        setLoading({ rojo: false, amarillo: false, verde: false });
       })
       .catch(() => {
         if (!mounted) return;
         setEmpresas({ rojo: [], amarillo: [], verde: [] });
+        setLoading({ rojo: false, amarillo: false, verde: false });
       });
+
     return () => {
       mounted = false;
     };
@@ -81,7 +88,24 @@ function Clasificacion() {
               </Accordion.Header>
 
               <Accordion.Body>
-                {empresas[color].length === 0 ? (
+                {/* === Mostrar Spinner mientras carga === */}
+                {loading[color] ? (
+                  <div className="text-center py-3">
+                    <Spinner
+                      animation="border"
+                      variant={
+                        color === "rojo"
+                          ? "danger"
+                          : color === "amarillo"
+                          ? "warning"
+                          : "success"
+                      }
+                    />
+                    <div className="text-muted small mt-2">
+                      Cargando empresas...
+                    </div>
+                  </div>
+                ) : empresas[color].length === 0 ? (
                   <div className="text-muted">No hay empresas en esta categoría.</div>
                 ) : (
                   <ul className="lista-empresas list-unstyled mb-0">
