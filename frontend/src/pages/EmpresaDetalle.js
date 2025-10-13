@@ -20,21 +20,15 @@ function EmpresaDetalle() {
 
     axios
       .get(`/empresas/${encodeURIComponent(nombre)}`)
-      .then(({ data }) => {
-        if (!mounted) return;
-        setEmpresa(data);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setEmpresa(null);
-      });
+      .then(({ data }) => mounted && setEmpresa(data))
+      .catch(() => mounted && setEmpresa(null));
 
     axios
       .get(`/incumplimientos`, { params: { empresa: nombre } })
       .then(({ data }) => {
         if (!mounted) return;
-        setIncumplimientos(data.filter((inc) => inc.incumplimiento === true));
-        setCumplimientos(data.filter((inc) => inc.incumplimiento === false));
+        setIncumplimientos(data.filter((i) => i.incumplimiento));
+        setCumplimientos(data.filter((i) => !i.incumplimiento));
       })
       .catch(() => {
         if (!mounted) return;
@@ -42,9 +36,7 @@ function EmpresaDetalle() {
         setCumplimientos([]);
       });
 
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [nombre]);
 
   const getSemaforoText = (color) => {
@@ -59,21 +51,15 @@ function EmpresaDetalle() {
       <div className="page-card">
         {empresa ? (
           <>
-            {/* Semáforo + nombre + riesgo */}
             <div className="semaforo-container">
               <div className="semaforo-vertical">
-                <div
-                  className={`semaforo-circulo ${empresa.semaforo === "rojo" ? "activo" : ""}`}
-                  style={{ background: SEMAFORO_COLORS.rojo }}
-                />
-                <div
-                  className={`semaforo-circulo ${empresa.semaforo === "amarillo" ? "activo" : ""}`}
-                  style={{ background: SEMAFORO_COLORS.amarillo }}
-                />
-                <div
-                  className={`semaforo-circulo ${empresa.semaforo === "verde" ? "activo" : ""}`}
-                  style={{ background: SEMAFORO_COLORS.verde }}
-                />
+                {["rojo", "amarillo", "verde"].map((c) => (
+                  <div
+                    key={c}
+                    className={`semaforo-circulo ${empresa.semaforo === c ? "activo" : ""}`}
+                    style={{ background: SEMAFORO_COLORS[c] }}
+                  />
+                ))}
               </div>
               <div className="semaforo-info">
                 <h2 className="empresa-nombre">{empresa.nombre}</h2>
@@ -83,40 +69,35 @@ function EmpresaDetalle() {
               </div>
             </div>
 
-            {/* Tabla de incumplimientos */}
+            {/* Incumplimientos */}
             <div className="mt-4">
               <h5>Historial de Incumplimientos</h5>
-
               <div className="table-responsive rounded-3 shadow-sm overflow-hidden">
-                <table className="table table-striped table-hover align-middle mb-0 incumplimientos-table stacked-table">
+                <table className="table table-striped table-hover align-middle mb-0">
                   <thead>
                     <tr>
                       <th>Fecha</th>
-                      <th>Razón de Incumplimiento</th>
-                      <th className="num-col text-end">Gravedad</th>
-                      <th className="num-col text-end">Retenciones (CLP)</th>
+                      <th>Obra</th>
+                      <th>Razón</th>
+                      <th className="text-end">Gravedad</th>
+                      <th className="text-end">Retención</th>
                     </tr>
                   </thead>
                   <tbody>
                     {incumplimientos.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="text-center text-muted">
+                        <td colSpan={5} className="text-center text-muted">
                           Sin registros
                         </td>
                       </tr>
                     ) : (
                       incumplimientos.map((inc, idx) => (
                         <tr key={idx}>
-                          <td data-th="Fecha">{new Date(inc.fecha).toLocaleDateString()}</td>
-                          <td data-th="Razón de Incumplimiento" className="wrap">
-                            {inc.razon || "-"}
-                          </td>
-                          <td data-th="Gravedad" className="num-col text-end">
-                            {inc.gravedad || "-"}
-                          </td>
-                          <td data-th="Retenciones (CLP)" className="num-col text-end">
-                            {inc.retenciones !== undefined ? inc.retenciones.toLocaleString() : "-"}
-                          </td>
+                          <td>{new Date(inc.fecha).toLocaleDateString()}</td>
+                          <td>{inc.obra}</td>
+                          <td>{inc.razon || "-"}</td>
+                          <td className="text-end">{inc.gravedad}</td>
+                          <td className="text-end">{inc.retencionSiNo}</td>
                         </tr>
                       ))
                     )}
@@ -125,32 +106,31 @@ function EmpresaDetalle() {
               </div>
             </div>
 
-            {/* Tabla de cumplimientos */}
+            {/* Cumplimientos */}
             <div className="mt-5">
               <h5>Historial de Cumplimientos</h5>
-
               <div className="table-responsive rounded-3 shadow-sm overflow-hidden">
-                <table className="table table-striped table-hover align-middle mb-0 incumplimientos-table stacked-table">
+                <table className="table table-striped table-hover align-middle mb-0">
                   <thead>
                     <tr>
                       <th>Fecha</th>
+                      <th>Obra</th>
                       <th>Comentario</th>
                     </tr>
                   </thead>
                   <tbody>
                     {cumplimientos.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="text-center text-muted">
+                        <td colSpan={3} className="text-center text-muted">
                           Sin registros
                         </td>
                       </tr>
                     ) : (
-                      cumplimientos.map((inc, idx) => (
+                      cumplimientos.map((c, idx) => (
                         <tr key={idx}>
-                          <td data-th="Fecha">{new Date(inc.fecha).toLocaleDateString()}</td>
-                          <td data-th="Comentario" className="wrap">
-                            {inc.comentario && inc.comentario.trim() !== "" ? inc.comentario : "Sin comentario"}
-                          </td>
+                          <td>{new Date(c.fecha).toLocaleDateString()}</td>
+                          <td>{c.obra}</td>
+                          <td>{c.comentario || "Sin comentario"}</td>
                         </tr>
                       ))
                     )}

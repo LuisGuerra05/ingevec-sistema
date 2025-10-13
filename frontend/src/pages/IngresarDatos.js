@@ -1,121 +1,127 @@
-// frontend/src/pages/IngresarDatos.js
 import React, { useEffect, useState } from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import "./IngresarDatos.css";
-import { razones, empresas } from "../data/opciones";
 import CustomSelect from "../components/CustomSelect";
 import axios from "../api/axiosInstance";
 
-const opcionesRazones = razones.map((r) => ({ value: r, label: r }));
-const opcionesEmpresas = empresas.map((e) => ({ value: e, label: e }));
-
 function IngresarDatos() {
   const [empresa, setEmpresa] = useState("");
+  const [obra, setObra] = useState("");
   const [fecha, setFecha] = useState("");
   const [incumplimiento, setIncumplimiento] = useState(false);
   const [razon, setRazon] = useState("");
   const [gravedad, setGravedad] = useState(1);
-  const [retenciones, setRetenciones] = useState("");
+  const [retencionSiNo, setRetencionSiNo] = useState(false);
   const [comentario, setComentario] = useState("");
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
-  const [colorActual, setColorActual] = useState(null); // 🔹 color actual de la empresa
+  const [colorActual, setColorActual] = useState(null);
+  const [empresas, setEmpresas] = useState([]);
+  const [razones, setRazones] = useState([]);
+  const [obras, setObras] = useState([]);
 
-  // --- Solo números enteros en "Retenciones" ---
-  const onlyDigits = (str) => (str || "").replace(/[^\d]/g, "");
-  const handleRetencionesChange = (e) => {
-    const cleaned = onlyDigits(e.target.value);
-    setRetenciones(cleaned);
-  };
-  const preventNonDigitsBeforeInput = (e) => {
-    if (e.data && /\D/.test(e.data)) e.preventDefault();
-  };
-  const preventNonDigitsKeyDown = (e) => {
-    const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Home", "End", "Tab", "Enter"];
-    if (allowedKeys.includes(e.key)) return;
-    if (!/^\d$/.test(e.key)) e.preventDefault();
-  };
-  const handleRetencionesPaste = (e) => {
-    const text = (e.clipboardData || window.clipboardData).getData("text");
-    if (!/^\d*$/.test(text)) e.preventDefault();
-  };
-
-  // --- Auto-cierre de Alerts a los 3s ---
+  // === Cargar opciones de base de datos ===
   useEffect(() => {
-    if (!error) return;
-    const t = setTimeout(() => setError(""), 3000);
-    return () => clearTimeout(t);
-  }, [error]);
+    const fetchData = async () => {
+      try {
+        const [empRes, razRes, obrRes] = await Promise.all([
+          axios.get("/api/opciones/empresa/list"),
+          axios.get("/api/opciones/razon/list"),
+          axios.get("/api/opciones/obra/list"),
+        ]);
 
-  useEffect(() => {
-    if (!ok) return;
-    const t = setTimeout(() => setOk(""), 3000);
-    return () => clearTimeout(t);
-  }, [ok]);
+        const empresasOrdenadas = empRes.data.map((e) => e.nombre).sort((a, b) => a.localeCompare(b));
+        const razonesOrdenadas = razRes.data.map((r) => r.nombre).sort((a, b) => a.localeCompare(b));
+        const obrasOrdenadas = obrRes.data.map((o) => o.nombre).sort((a, b) => a.localeCompare(b));
 
-  // --- Consultar color actual cada vez que cambia empresa o se guarda un nuevo registro ---
+        setEmpresas(empresasOrdenadas);
+        setRazones(razonesOrdenadas);
+        setObras(obrasOrdenadas);
+      } catch (error) {
+        console.error("❌ Error cargando opciones:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // === Actualizar color actual ===
   useEffect(() => {
     if (!empresa) {
       setColorActual(null);
       return;
     }
     axios
-      .get(`/empresas/${encodeURIComponent(empresa)}`)
+      .get(`/api/empresas/${encodeURIComponent(empresa)}`)
       .then(({ data }) => setColorActual(data?.semaforo || null))
       .catch(() => setColorActual(null));
-  }, [empresa, ok]); // 👈 se ejecuta también al guardar
+  }, [empresa, ok]);
 
+  // === Alertas temporales ===
+  useEffect(() => {
+    if (error) setTimeout(() => setError(""), 3000);
+  }, [error]);
+  useEffect(() => {
+    if (ok) setTimeout(() => setOk(""), 3000);
+  }, [ok]);
+
+  // === Crear nueva opción (empresa, razón u obra) ===
+  const agregarNuevaOpcion = async (tipo, valor) => {
+    if (!valor) return;
+    try {
+      await axios.post(`/api/opciones/${tipo}`, { valor });
+      if (tipo === "empresa")
+        setEmpresas((prev) => [...new Set([...prev, valor])].sort());
+      if (tipo === "razon")
+        setRazones((prev) => [...new Set([...prev, valor])].sort());
+      if (tipo === "obra")
+        setObras((prev) => [...new Set([...prev, valor])].sort());
+    } catch {
+      console.error("Error guardando nueva opción");
+    }
+  };
+
+  // === Enviar formulario ===
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setOk("");
 
-    if (!empresa || !fecha) {
+    if (!empresa || !fecha || !obra) {
       setError("Todos los campos son obligatorios");
       return;
     }
+
     if (incumplimiento && (!razon || !gravedad)) {
       setError("Debe ingresar razón y gravedad");
       return;
     }
-    if (incumplimiento && retenciones !== "" && !/^\d+$/.test(retenciones)) {
-      setError("El campo 'Retenciones' solo admite números enteros (CLP).");
-      return;
-    }
 
     try {
-      const parsedRet = retenciones === "" ? undefined : parseInt(retenciones, 10);
-      if (parsedRet !== undefined && parsedRet < 0) {
-        setError("El monto de retenciones no puede ser negativo.");
-        return;
-      }
-
       const payload = {
         empresa,
+        obra,
         fecha,
         incumplimiento,
         razon: incumplimiento ? razon : undefined,
         gravedad: incumplimiento ? gravedad : undefined,
-        retenciones: incumplimiento ? parsedRet : undefined,
+        retencionSiNo: retencionSiNo ? "Sí" : "No",
         comentario: !incumplimiento ? comentario : undefined,
       };
 
-      const { data } = await axios.post("/incumplimientos", payload);
+      const { data } = await axios.post("/api/incumplimientos", payload);
 
       if (data.ok) {
         setOk("Registro guardado correctamente");
-
-        // 🔁 Actualizar color actual tras guardar
-        const res = await axios.get(`/empresas/${encodeURIComponent(empresa)}`);
+        const res = await axios.get(`/api/empresas/${encodeURIComponent(empresa)}`);
         setColorActual(res.data?.semaforo || null);
-
-        // 🔄 Limpiar formulario
         setEmpresa("");
+        setObra("");
         setFecha("");
         setIncumplimiento(false);
         setRazon("");
         setGravedad(1);
-        setRetenciones("");
+        setRetencionSiNo(false);
         setComentario("");
       } else {
         setError(data.error || "Error al guardar");
@@ -125,12 +131,14 @@ function IngresarDatos() {
     }
   };
 
-  // --- función auxiliar para mostrar color ---
   const renderEstadoColor = () => {
-    if (colorActual === "rojo") return <span style={{ color: "#e53935", fontWeight: "bold" }}>Alto riesgo</span>;
-    if (colorActual === "amarillo") return <span style={{ color: "#fbc02d", fontWeight: "bold" }}>Riesgo medio</span>;
-    if (colorActual === "verde") return <span style={{ color: "#43a047", fontWeight: "bold" }}>Bajo riesgo</span>;
-    return <span style={{ color: "#888" }}>Sin color asignado (sin incumplimientos)</span>;
+    if (colorActual === "rojo")
+      return <span style={{ color: "#e53935", fontWeight: "bold" }}>Alto riesgo</span>;
+    if (colorActual === "amarillo")
+      return <span style={{ color: "#fbc02d", fontWeight: "bold" }}>Riesgo medio</span>;
+    if (colorActual === "verde")
+      return <span style={{ color: "#43a047", fontWeight: "bold" }}>Bajo riesgo</span>;
+    return <span style={{ color: "#888" }}>Sin color asignado</span>;
   };
 
   return (
@@ -142,16 +150,51 @@ function IngresarDatos() {
         </p>
 
         <Form onSubmit={handleSubmit}>
+          {/* Empresa */}
           <Form.Group className="mb-3">
             <Form.Label>Nombre de la Empresa</Form.Label>
             <CustomSelect
-              options={opcionesEmpresas}
-              value={opcionesEmpresas.find((o) => o.value === empresa) || null}
-              onChange={(o) => setEmpresa(o.value)}
+              options={[
+                ...empresas.map((e) => ({ value: e, label: e })),
+                { value: "Nueva", label: "➕ Nueva..." },
+              ]}
+              value={empresa ? { value: empresa, label: empresa } : null}
+              onChange={(o) => {
+                if (o.value === "Nueva") {
+                  const nueva = prompt("Ingrese el nombre de la nueva empresa:");
+                  if (nueva) agregarNuevaOpcion("empresa", nueva);
+                  setEmpresa(nueva || "");
+                } else {
+                  setEmpresa(o.value);
+                }
+              }}
               placeholder="Seleccione una empresa..."
             />
           </Form.Group>
 
+          {/* Obra */}
+          <Form.Group className="mb-3">
+            <Form.Label>Obra</Form.Label>
+            <CustomSelect
+              options={[
+                ...obras.map((o) => ({ value: o, label: o })),
+                { value: "Nueva", label: "➕ Nueva..." },
+              ]}
+              value={obra ? { value: obra, label: obra } : null}
+              onChange={(o) => {
+                if (o.value === "Nueva") {
+                  const nueva = prompt("Ingrese el nombre de la nueva obra:");
+                  if (nueva) agregarNuevaOpcion("obra", nueva);
+                  setObra(nueva || "");
+                } else {
+                  setObra(o.value);
+                }
+              }}
+              placeholder="Seleccione una obra..."
+            />
+          </Form.Group>
+
+          {/* Fecha */}
           <Form.Group className="mb-3">
             <Form.Label>Fecha</Form.Label>
             <Form.Control
@@ -162,6 +205,7 @@ function IngresarDatos() {
             />
           </Form.Group>
 
+          {/* Incumplimiento */}
           <Form.Group className="mb-3">
             <Form.Label>¿Hubo Incumplimiento?</Form.Label>
             <div>
@@ -187,52 +231,63 @@ function IngresarDatos() {
           </Form.Group>
 
           {incumplimiento ? (
-            <div className="ingresar-form-row">
-              <div className="ingresar-form-col">
-                <Form.Group className="mb-3">
-                  <Form.Label>Razón de Incumplimiento</Form.Label>
-                  <CustomSelect
-                    options={opcionesRazones}
-                    value={opcionesRazones.find((o) => o.value === razon) || null}
-                    onChange={(o) => setRazon(o.value)}
-                    placeholder="Seleccione una razón..."
-                  />
-                </Form.Group>
+            <>
+              <Form.Group className="mb-3">
+                <Form.Label>Razón de Incumplimiento</Form.Label>
+                <CustomSelect
+                  options={[
+                    ...razones.map((r) => ({ value: r, label: r })),
+                    { value: "Nueva", label: "➕ Nueva..." },
+                  ]}
+                  value={razon ? { value: razon, label: razon } : null}
+                  onChange={(o) => {
+                    if (o.value === "Nueva") {
+                      const nueva = prompt("Ingrese una nueva razón:");
+                      if (nueva) agregarNuevaOpcion("razon", nueva);
+                      setRazon(nueva || "");
+                    } else {
+                      setRazon(o.value);
+                    }
+                  }}
+                  placeholder="Seleccione una razón..."
+                />
+              </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Monto de Retenciones (CLP)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    inputMode="numeric"
-                    pattern="\d*"
-                    minLength={0}
-                    maxLength={12}
-                    value={retenciones}
-                    placeholder="Ej: 500000"
-                    onChange={handleRetencionesChange}
-                    onBeforeInput={preventNonDigitsBeforeInput}
-                    onKeyDown={preventNonDigitsKeyDown}
-                    onPaste={handleRetencionesPaste}
+              <Form.Group className="mb-3">
+                <Form.Label>¿Hubo Retención?</Form.Label>
+                <div>
+                  <Form.Check
+                    inline
+                    label="Sí"
+                    type="radio"
+                    name="retencion"
+                    id="retencion-si"
+                    checked={retencionSiNo === true}
+                    onChange={() => setRetencionSiNo(true)}
                   />
-                  <Form.Text className="text-muted">
-                    Solo números enteros. Si no hubo retenciones o no se conoce el dato, deje el campo vacío.
-                  </Form.Text>
-                </Form.Group>
-              </div>
+                  <Form.Check
+                    inline
+                    label="No"
+                    type="radio"
+                    name="retencion"
+                    id="retencion-no"
+                    checked={retencionSiNo === false}
+                    onChange={() => setRetencionSiNo(false)}
+                  />
+                </div>
+              </Form.Group>
 
-              <div className="ingresar-form-col">
-                <Form.Group className="mb-4">
-                  <Form.Label>Gravedad de Incumplimiento</Form.Label>
-                  <Form.Range
-                    min={1}
-                    max={5}
-                    value={gravedad}
-                    onChange={(e) => setGravedad(Number(e.target.value))}
-                  />
-                  <div>Gravedad: {gravedad}</div>
-                </Form.Group>
-              </div>
-            </div>
+              <Form.Group className="mb-3">
+                <Form.Label>Gravedad de Incumplimiento</Form.Label>
+                <Form.Range
+                  min={1}
+                  max={5}
+                  value={gravedad}
+                  onChange={(e) => setGravedad(Number(e.target.value))}
+                />
+                <div>Gravedad: {gravedad}</div>
+              </Form.Group>
+            </>
           ) : (
             <Form.Group className="mb-3">
               <Form.Label>Comentario</Form.Label>
@@ -246,14 +301,13 @@ function IngresarDatos() {
             </Form.Group>
           )}
 
-          {/* Alerts */}
           {error && (
-            <Alert variant="danger" dismissible onClose={() => setError("")} className="mb-3">
+            <Alert variant="danger" dismissible onClose={() => setError("")}>
               {error}
             </Alert>
           )}
           {ok && (
-            <Alert variant="success" dismissible onClose={() => setOk("")} className="mb-3">
+            <Alert variant="success" dismissible onClose={() => setOk("")}>
               {ok}
             </Alert>
           )}
@@ -263,7 +317,6 @@ function IngresarDatos() {
           </Button>
         </Form>
 
-        {/* Estado actual del color */}
         {empresa && (
           <div className="text-center mt-4">
             <strong>Estado actual:</strong> {renderEstadoColor()}

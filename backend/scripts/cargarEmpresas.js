@@ -1,9 +1,12 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Empresa = require('../models/Empresa');
+require("dotenv").config();
+const mongoose = require("mongoose");
+const Empresa = require("../models/Empresa");
+const Razon = require("../models/Razon");
+const Obra = require("../models/Obra");
 
 const { MONGO_URI, DB_NAME } = process.env;
 
+// === EMPRESAS ===
 const empresas = [
   { nombre: "ALEJANDRO ESTEBAN SAZO MONDACA", semaforo: "rojo" },
   { nombre: "ARTEYESPRO CHILE SPA", semaforo: "amarillo" },
@@ -20,21 +23,58 @@ const empresas = [
   { nombre: "OBRAS Y SERVICIOS DE BOMBEO SPA", semaforo: "verde" },
   { nombre: "SILVA PAVIMENTOS Y CONSTRUCCION LIMITADA", semaforo: "rojo" },
   { nombre: "TRANSPORTES YEVENES SPA", semaforo: "amarillo" },
-  { nombre: "UNION S.A.", semaforo: "verde" }
+  { nombre: "UNION S.A.", semaforo: "verde" },
 ];
 
-async function seed() {
-  await mongoose.connect(MONGO_URI, { dbName: DB_NAME });
-  const dbName = mongoose.connection.name;
-  console.log(`Conectado a MongoDB: ${dbName}`);
+// === RAZONES CON PESO ===
+const pesosRazon = {
+  "Abandono de obra": 10,
+  "Abandono e intervención de obra": 10,
+  "Atraso y daños por trabajos extemporáneos": 6,
+  "Daños por filtraciones": 6,
+  "Intervención del contrato": 5,
+  "Juicio laboral": 10,
+  "Mal funcionamiento": 6,
+  "Mal funcionamiento intervención": 7,
+  "Mal funcionamiento de plazos": 8,
+  "Plazo extendido contrato": 5,
+  "Quiebra subcontrato": 1,
+  "Otros": 3,
+};
 
-  await Empresa.deleteMany({});
-  await Empresa.insertMany(empresas);
-  console.log('Empresas cargadas');
-  await mongoose.disconnect();
+// === OBRAS ===
+const obras = ["Miraflores 1406, Renca", "Libertad 51"];
+
+async function seed() {
+  try {
+    await mongoose.connect(MONGO_URI, { dbName: DB_NAME });
+    console.log(`✅ Conectado a MongoDB: ${mongoose.connection.name}`);
+
+    // --- Empresas ---
+    await Empresa.deleteMany({});
+    await Empresa.insertMany(empresas);
+    console.log("🏗️ Empresas cargadas correctamente");
+
+    // --- Razones ---
+    await Razon.deleteMany({});
+    const razonesDocs = Object.entries(pesosRazon).map(([nombre, peso]) => ({
+      nombre,
+      peso,
+    }));
+    await Razon.insertMany(razonesDocs);
+    console.log("📊 Razones cargadas correctamente");
+
+    // --- Obras ---
+    await Obra.deleteMany({});
+    await Obra.insertMany(obras.map((nombre) => ({ nombre })));
+    console.log("🏢 Obras cargadas correctamente");
+
+    await mongoose.disconnect();
+    console.log("✅ Base de datos inicializada con éxito");
+  } catch (err) {
+    console.error("❌ Error al ejecutar seed:", err.message);
+    process.exit(1);
+  }
 }
 
-seed().catch(err => {
-  console.error('Error al cargar empresas:', err.message);
-  process.exit(1);
-});
+seed();

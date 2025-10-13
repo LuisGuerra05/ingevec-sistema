@@ -8,6 +8,9 @@ const requireAuth = require('./middleware/requireAuth');
 const UserRoutes = require('./routes/UserRoutes');
 const IncumplimientoRoutes = require('./routes/IncumplimientoRoutes');
 const EmpresaRoutes = require('./routes/EmpresaRoutes');
+const opcionesRoutes = require("./routes/opcionesRoutes");
+
+
 
 const { MONGO_URI, DB_NAME } = process.env;
 
@@ -19,6 +22,7 @@ app.use(express.json());
 app.use('/api', UserRoutes);
 app.use('/api/incumplimientos', IncumplimientoRoutes);
 app.use('/api/empresas', EmpresaRoutes);
+app.use("/opciones", opcionesRoutes);
 
 // --- Servir React ---
 const localFrontendPath = path.join(__dirname, "..", "frontend", "build");  // desarrollo local

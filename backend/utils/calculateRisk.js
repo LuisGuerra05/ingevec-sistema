@@ -1,20 +1,20 @@
 const Incumplimiento = require('../models/Incumplimiento');
 const Empresa = require('../models/Empresa');
 
-// Pesos provisionales (1–12)
+// Pesos provisionales (1–10)
 const pesosRazon = {
-  "Abandono de obra": 1,
-  "Abandono e intervención de obra": 2,
-  "Atraso y daños por trabajos extemporáneos": 3,
-  "Daños por filtraciones": 4,
+  "Abandono de obra": 10,
+  "Abandono e intervención de obra": 10,
+  "Atraso y daños por trabajos extemporáneos": 6,
+  "Daños por filtraciones": 6,
   "Intervención del contrato": 5,
-  "Juicio laboral": 6,
-  "Mal funcionamiento": 7,
-  "Mal funcionamiento intervención": 8,
-  "Mal funcionamiento de plazos": 9,
-  "Plazo extendido contrato": 10,
-  "Quiebra subcontrato": 11,
-  "Otros": 12,
+  "Juicio laboral": 10,
+  "Mal funcionamiento": 6,
+  "Mal funcionamiento intervención": 7,
+  "Mal funcionamiento de plazos": 8,
+  "Plazo extendido contrato": 5,
+  "Quiebra subcontrato": 1,
+  "Otros": 3,
 };
 
 // --- FUNCIÓN PRINCIPAL ---
@@ -35,7 +35,7 @@ async function calcularColorEmpresa(nombreEmpresa) {
       return;
     }
 
-    const Pmax = 12 * 5; // razón más alta (12) * gravedad máxima (5)
+    const Pmax = 10 * 5; // razón más alta (10) * gravedad máxima (5)
     const puntajes = registros.map((reg) => {
       if (reg.incumplimiento) {
         const W = pesosRazon[reg.razon] || 1;
