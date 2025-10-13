@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, Button, Card, Alert, InputGroup } from "react-bootstrap";
+import { Form, Button, Card, Alert } from "react-bootstrap";
 import "./IngresarDatos.css";
 import CustomSelect from "../components/CustomSelect";
 import axios from "../api/axiosInstance";
